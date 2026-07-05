@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>건설라이브러리 포스트 검증기</title>
+<meta name="description" content="건설라이브러리 ARCHIVE 포스트 검증 및 현황 관리">
+<meta name="theme-color" content="#1B2F5E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="검증기">
+<link rel="manifest" href="manifest.json">
+<!-- 아이콘 (인라인 SVG → base64) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjMUIyRjVFIi8+PHRleHQgeD0iOTYiIHk9IjEyOCIgZm9udC1zaXplPSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNFODYxMkMiPvCfkYs8L3RleHQ+PC9zdmc+">
+<style>
+  :root {
+    --navy: #1B2F5E; --orange: #E8612C; --orange-light: #FDF0EB;
+    --navy-light: #E8ECF5; --green: #2E9E6B; --green-light: #E8F6EF;
+    --red: #C0392B; --red-light: #FDECEB; --yellow: #E67E22; --yellow-light: #FEF5EC;
+    --gray: #95A5A6; --gray-light: #F5F6FA; --border: #E0E4ED;
+    --text: #2C3E50; --text-sub: #7F8C8D;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: #F0F2F7; color: var(--text); min-height: 100vh; }
+
+  .header {
+    background: var(--navy); color: white; padding: 0 20px; height: 52px;
+    display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(27,47,94,0.3);
+  }
+  .header-logo { font-size: 14px; font-weight: 700; }
+  .header-logo span { color: var(--orange); }
+  .header-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.2); }
+  .header-sub { font-size: 13px; opacity: 0.7; }
+  .header-spacer { flex: 1; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-count { font-size: 11px; opacity: 0.6; }
+  .sync-indicator { font-size: 10px; padding: 3px 8px; border-radius: 10px; background: rgba(255,255,255,0.15); }
+  .sync-indicator.ok { background: rgba(46,158,107,0.4); }
+  .sync-indicator.err { background: rgba(192,57,43,0.4); }
+
+  .layout { display: flex; height: calc(100vh - 52px); }
+
+  .sidebar {
+    width: 290px; min-width: 290px; background: white;
+    border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sidebar-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .section-label { font-size: 10px; font-weight: 600; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+
+  .ifield {
+    flex: 1; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 12px; font-family: var(--font); color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  .ifield:focus { border-color: var(--navy); }
+  .ifield::placeholder { color: var(--text-sub); }
+  .input-row { display: flex; gap: 6px; margin-bottom: 6px; }
+
+  .btn {
+    padding: 7px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    font-family: var(--font); cursor: pointer; border: none;
+    transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-navy { background: var(--navy); color: white; }
+  .btn-navy:hover:not(:disabled) { opacity: 0.88; }
+  .btn-orange { background: var(--orange); color: white; }
+  .btn-orange:hover:not(:disabled) { opacity: 0.88; }
+  .btn-ghost { background: var(--gray-light); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover:not(:disabled) { background: var(--border); }
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover:not(:disabled) { opacity: 0.88; }
+  .btn-full { width: 100%; }
+
+  .filter-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .ftab {
+    padding: 4px 9px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: white; color: var(--text-sub); transition: all 0.15s;
+  }
+  .ftab.active { border-color: transparent; color: white; }
+  .ftab[data-f="all"].active { background: var(--navy); }
+  .ftab[data-f="pass"].active { background: var(--green); }
+  .ftab[data-f="fix"].active { background: var(--yellow); }
+  .ftab[data-f="delete"].active { background: var(--red); }
+  .ftab[data-f="unreviewed"].active { background: var(--gray); }
+
+  .search-wrap { position: relative; }
+  .search-input {
+    width: 100%; padding: 7px 10px 7px 30px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 12px; font-family: var(--font); color: var(--text); outline: none;
+  }
+  .search-input:focus { border-color: var(--navy); }
+  .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); font-size: 12px; }
+
+  .post-list { flex: 1; overflow-y: auto; padding: 6px; }
+  .post-list::-webkit-scrollbar { width: 3px; }
+  .post-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .pitem {
+    padding: 9px 11px; border-radius: 7px; cursor: pointer;
+    border: 1px solid transparent; margin-bottom: 3px; transition: all 0.15s;
+  }
+  .pitem:hover { background: var(--gray-light); border-color: var(--border); }
+  .pitem.active { background: var(--navy-light); border-color: var(--navy); }
+  .pitem-title { font-size: 12px; font-weight: 500; line-height: 1.4; margin-bottom: 4px; }
+  .pitem-meta { font-size: 10px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+  .sdot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .sdot.pass { background: var(--green); }
+  .sdot.fix { background: var(--yellow); }
+  .sdot.delete { background: var(--red); }
+  .sdot.unreviewed { background: var(--gray); }
+  .sdot.verifying { background: var(--orange); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .empty-state { text-align: center; padding: 36px 16px; color: var(--text-sub); font-size: 12px; line-height: 1.9; }
+
+  .stats-bar {
+    display: flex; gap: 10px; padding: 10px 14px;
+    border-top: 1px solid var(--border); background: var(--gray-light); flex-wrap: wrap; align-items: center;
+  }
+  .stat-item { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+  .stat-num { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat-num.pass { color: var(--green); }
+  .stat-num.fix { color: var(--yellow); }
+  .stat-num.delete { color: var(--red); }
+  .stat-num.unreviewed { color: var(--gray); }
+
+  .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--green),var(--orange)); border-radius: 2px; transition: width 0.4s; }
+
+  .main { flex: 1; overflow-y: auto; padding: 20px; }
+  .main::-webkit-scrollbar { width: 4px; }
+  .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .placeholder { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); gap: 10px; }
+  .placeholder-icon { font-size: 36px; opacity: 0.25; }
+  .placeholder-text { font-size: 13px; }
+
+  .detail-wrap { max-width: 820px; display: flex; flex-direction: column; gap: 14px; }
+  .card { background: white; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+  .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .card-header-title { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
+  .card-body { padding: 16px 20px; }
+
+  .detail-category { font-size: 10px; font-weight: 600; color: var(--orange); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+  .detail-title { font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--navy); margin-bottom: 8px; }
+  .detail-meta { font-size: 11px; color: var(--text-sub); display: flex; gap: 14px; flex-wrap: wrap; }
+  .detail-meta a { color: var(--navy); text-decoration: none; font-weight: 500; }
+  .detail-meta a:hover { text-decoration: underline; }
+
+  .status-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .status-label { font-size: 12px; font-weight: 600; color: var(--text); margin-right: 4px; }
+  .sbtn {
+    display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; font-family: var(--font); cursor: pointer; border: 2px solid transparent; transition: all 0.15s;
+  }
+  .sbtn.pass { background: var(--green-light); color: var(--green); border-color: var(--green-light); }
+  .sbtn.fix { background: var(--yellow-light); color: var(--yellow); border-color: var(--yellow-light); }
+  .sbtn.delete { background: var(--red-light); color: var(--red); border-color: var(--red-light); }
+  .sbtn.unreviewed { background: var(--gray-light); color: var(--gray); border-color: var(--border); }
+  .sbtn.pass.sel { border-color: var(--green); box-shadow: 0 0 0 2px rgba(46,158,107,0.15); }
+  .sbtn.fix.sel { border-color: var(--yellow); box-shadow: 0 0 0 2px rgba(230,126,34,0.15); }
+  .sbtn.delete.sel { border-color: var(--red); box-shadow: 0 0 0 2px rgba(192,57,43,0.15); }
+  .sbtn.unreviewed.sel { border-color: var(--gray); }
+
+  .gemini-bar { display: flex; align-items: flex-start; gap: 10px; padding: 14px 20px; background: var(--gray-light); }
+  .gemini-desc { font-size: 12px; color: var(--text-sub); flex: 1; line-height: 1.6; }
+
+  .result-wrap { padding: 16px 20px; }
+  .result-summary { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .result-badge { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .rb-pass { background: var(--green-light); color: var(--green); }
+  .rb-warn { background: var(--yellow-light); color: var(--yellow); }
+  .rb-fail { background: var(--red-light); color: var(--red); }
+
+  .result-section { margin-bottom: 14px; }
+  .result-section-title { font-size: 11px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .result-item { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 7px; margin-bottom: 5px; font-size: 12px; line-height: 1.6; }
+  .ri-pass { background: var(--green-light); color: #1a5c3a; }
+  .ri-warn { background: var(--yellow-light); color: #7d4a00; }
+  .ri-fail { background: var(--red-light); color: #8b1a14; }
+  .ri-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .verdict-box { padding: 12px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 14px; display: flex; align-items: center; gap: 8px; }
+  .verdict-pass { background: var(--green-light); color: var(--green); border: 1.5px solid var(--green); }
+  .verdict-fix { background: var(--yellow-light); color: var(--yellow); border: 1.5px solid var(--yellow); }
+  .verdict-delete { background: var(--red-light); color: var(--red); border: 1.5px solid var(--red); }
+
+  .memo-textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 12px; font-family: var(--font); color: var(--text); resize: vertical; min-height: 80px;
+    outline: none; transition: border-color 0.15s; line-height: 1.6;
+  }
+  .memo-textarea:focus { border-color: var(--navy); }
+  .memo-row { display: flex; justify-content: flex-end; margin-top: 8px; gap: 8px; align-items: center; }
+  .memo-sync-status { font-size: 10px; color: var(--text-sub); }
+
+  .spinner-wrap { display: flex; align-items: center; gap: 10px; padding: 20px; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner-text { font-size: 12px; color: var(--text-sub); }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal { background: white; border-radius: 12px; padding: 22px; width: 460px; max-width: 90vw; transform: scale(0.95); transition: transform 0.2s; }
+  .modal-overlay.show .modal { transform: scale(1); }
+  .modal-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 14px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  .export-ta { width: 100%; height: 180px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 11px; font-family: monospace; color: var(--text); resize: none; outline: none; background: var(--gray-light); margin-bottom: 4px; }
+
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: white; padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 500; z-index: 999; opacity: 0; transform: translateY(6px); transition: all 0.22s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--green); }
+  .toast.error { background: var(--red); }
+
+  .loading-state { text-align: center; padding: 36px; color: var(--text-sub); font-size: 12px; }
+  .loading-state .spinner { margin: 0 auto 12px; }
+
+  .api-key-row { display: flex; gap: 6px; align-items: center; }
+  .api-key-status { font-size: 10px; color: var(--text-sub); }
+  .api-key-status.ok { color: var(--green); font-weight: 600; }
+
+  /* ── 모바일 레이아웃 ── */
+  @media (max-width: 640px) {
+    .layout { flex-direction: column; height: auto; min-height: calc(100vh - 52px); }
+
+    .sidebar {
+      width: 100%; min-width: unset; border-right: none;
+      border-bottom: 2px solid var(--border); max-height: none;
+    }
+
+    /* 모바일에서 사이드바 섹션 컴팩트하게 */
+    .sidebar-section { padding: 10px 14px; }
+    .section-label { margin-bottom: 8px; }
+
+    /* 필터탭 스크롤 */
+    .filter-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+    .ftab { flex-shrink: 0; }
+
+    /* 포스트 목록 높이 제한 */
+    .post-list { max-height: 40vh; }
+
+    /* 메인 영역 */
+    .main { padding: 12px; }
+    .detail-wrap { max-width: 100%; gap: 10px; }
+    .card-body { padding: 12px 14px; }
+    .card-header { padding: 10px 14px; }
+
+    /* 상태 버튼 */
+    .status-row { gap: 6px; }
+    .sbtn { padding: 5px 9px; font-size: 11px; }
+
+    /* 헤더 */
+    .header { padding: 0 14px; }
+    .header-logo { font-size: 13px; }
+    .header-sub { font-size: 11px; }
+    .sync-indicator { font-size: 9px; padding: 2px 6px; }
+    .header-count { display: none; }
+
+    /* 모달 */
+    .modal { width: 95vw; padding: 16px; }
+
+    /* 탭바 숨기기 (iOS safe area) */
+    body { padding-bottom: env(safe-area-inset-bottom); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">건설라이브러리 <span>ARCHIVE</span></div>
+  <div class="header-sep"></div>
+  <div class="header-sub">포스트 검증기</div>
+  <div class="header-spacer"></div>
+  <div class="header-right">
+    <div class="sync-indicator" id="syncIndicator">DB 연결 중...</div>
+    <div class="header-count" id="headerCount">포스트 0개</div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+
+    <!-- WordPress -->
+    <div class="sidebar-section">
+      <div class="section-label">WordPress</div>
+      <div class="input-row">
+        <input class="ifield" id="wpUrl" type="text" value="https://buildlibrary.co.kr">
+      </div>
+      <div class="input-row">
+        <input class="ifield" id="perPage" type="number" value="50" min="1" max="200" style="max-width:70px;">
+        <span style="font-size:11px;color:var(--text-sub);align-self:center;">개</span>
+        <button class="btn btn-navy" style="flex:1;" onclick="loadPosts()">불러오기</button>
+      </div>
+      <div id="loadStatus" style="font-size:10px;color:var(--text-sub);margin-top:4px;"></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
+    </div>
+
+    <!-- Gemini -->
+    <div class="sidebar-section">
+      <div class="section-label">Gemini API</div>
+      <div class="api-key-row">
+        <input class="ifield" id="geminiKey" type="password" placeholder="AIza... (Gemini API 키)">
+        <button class="btn btn-ghost" onclick="testGeminiKey()">확인</button>
+      </div>
+      <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+        <span class="api-key-status" id="geminiStatus">키 미입력</span>
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:10px;color:var(--navy);">키 발급 →</a>
+      </div>
+    </div>
+
+    <!-- 필터 -->
+    <div class="sidebar-section">
+      <div class="section-label">필터</div>
+      <div class="filter-tabs">
+        <div class="ftab active" data-f="all" onclick="setFilter('all')">전체 <span id="cnt-all">0</span></div>
+        <div class="ftab" data-f="unreviewed" onclick="setFilter('unreviewed')">미검토 <span id="cnt-unreviewed">0</span></div>
+        <div class="ftab" data-f="pass" onclick="setFilter('pass')">통과 <span id="cnt-pass">0</span></div>
+        <div class="ftab" data-f="fix" onclick="setFilter('fix')">수정 <span id="cnt-fix">0</span></div>
+        <div class="ftab" data-f="delete" onclick="setFilter('delete')">삭제 <span id="cnt-delete">0</span></div>
+      </div>
+    </div>
+
+    <!-- 검색 -->
+    <div class="sidebar-section" style="padding-bottom:10px;">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="searchInput" type="text" placeholder="제목 검색..." oninput="renderList()">
+      </div>
+    </div>
+
+    <div class="post-list" id="postList">
+      <div class="empty-state">WordPress URL을 입력하고<br>불러오기를 누르세요</div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item"><span class="sdot pass"></span><span class="stat-num pass" id="s-pass">0</span></div>
+      <div class="stat-item"><span class="sdot fix"></span><span class="stat-num fix" id="s-fix">0</span></div>
+      <div class="stat-item"><span class="sdot delete"></span><span class="stat-num delete" id="s-delete">0</span></div>
+      <div class="stat-item"><span class="sdot unreviewed"></span><span class="stat-num unreviewed" id="s-unreviewed">0</span></div>
+      <div style="margin-left:auto;">
+        <button class="btn btn-ghost" onclick="showExport()" style="font-size:10px;padding:4px 9px;">내보내기</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main" id="main">
+    <div class="placeholder">
+      <div class="placeholder-icon">🔍</div>
+      <div class="placeholder-text">포스트를 선택하면 여기서 검증합니다</div>
+    </div>
+  </div>
+</div>
+
+<!-- 내보내기 모달 -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-title">📊 검증 결과 내보내기</div>
+    <textarea class="export-ta" id="exportText" readonly></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeExport()">닫기</button>
+      <button class="btn btn-navy" onclick="copyExport()">복사</button>
+      <button class="btn btn-orange" onclick="downloadExport()">CSV 다운로드</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Supabase 설정 ──────────────────────────────────────
+const SB_URL = 'https://nmkkzwhcuznpyjnxhrem.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ta2t6d2hjdXpucHlqbnhocmVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNTk3NjMsImV4cCI6MjA5ODczNTc2M30.pIO67pp2NG5OGHwAxatISrXtVCFL8nLBWVjWWx3LeKY';
+const TABLE = 'post_verifications';
+
+// ── 상태 ──────────────────────────────────────────────
+let posts = [];
+let currentId = null;
+let currentFilter = 'all';
+let dbData = {}; // Supabase에서 불러온 데이터 캐시
+
+// ── Supabase API ──────────────────────────────────────
+const sbHeaders = {
+  'Content-Type': 'application/json',
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Prefer': 'return=representation'
+};
+
+async function sbFetch(path, options = {}) {
+  const res = await fetch(SB_URL + '/rest/v1/' + path, {
+    ...options,
+    headers: { ...sbHeaders, ...(options.headers || {}) }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  return res.json().catch(() => null);
+}
+
+// DB에서 전체 검증 데이터 불러오기
+async function loadDbData() {
+  try {
+    const data = await sbFetch(TABLE + '?select=id,status,memo,result');
+    dbData = {};
+    (data || []).forEach(r => { dbData[r.id] = r; });
+    setSyncStatus(true);
+    return dbData;
+  } catch(e) {
+    setSyncStatus(false, e.message);
+    return {};
+  }
+}
+
+// 단건 upsert
+async function saveToDb(p) {
+  try {
+    await sbFetch(TABLE, {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify({
+        id: p.id,
+        title: p.title,
+        status: p.status,
+        memo: p.memo,
+        result: p.result,
+        updated_at: new Date().toISOString()
+      })
+    });
+    setSyncStatus(true);
+    return true;
+  } catch(e) {
+    setSyncStatus(false, e.message);
+    return false;
+  }
+}
+
+function setSyncStatus(ok, msg = '') {
+  const el = document.getElementById('syncIndicator');
+  if (ok) {
+    el.textContent = '☁ DB 동기화됨';
+    el.className = 'sync-indicator ok';
+  } else {
+    el.textContent = '⚠ DB 오류';
+    el.className = 'sync-indicator err';
+    console.error('Supabase 오류:', msg);
+  }
+}
+
+// ── Gemini ────────────────────────────────────────────
+const GEMINI_MODEL = 'gemini-1.5-flash';
+const VERIFY_SYSTEM = `당신은 건설 기술 문서 검증 전문가입니다.
+건설라이브러리 ARCHIVE 포스트를 아래 4가지 항목으로 검증하고, 반드시 JSON만 반환하세요. 다른 텍스트 없이 JSON만.
+
+반환 형식:
+{
+  "수치기준": [{"level":"pass|warn|fail","text":"설명"}],
+  "금지표현": [{"level":"pass|warn|fail","text":"설명"}],
+  "용어오류": [{"level":"pass|warn|fail","text":"설명"}],
+  "구조누락": [{"level":"pass|warn|fail","text":"설명"}],
+  "verdict": "pass|fix|delete",
+  "summary": "한 줄 종합 의견"
+}
+
+검증 기준:
+1. 수치기준: 수치가 등장할 때 KCS/KDS/KS 번호가 함께 있는지 확인. 없으면 warn. "일반적으로 ~mm다" 같은 단정 서술은 fail.
+2. 금지표현: "~년간의 경험", "전문가로서", "본 포스팅에서는", "이상으로 마치겠습니다" 등 → fail.
+3. 용어오류: "PHC파일 타설"→"항타"가 맞음, "조적 타설"→"사춤"이 맞음 등 건설 현장 용어 오류 체크.
+4. 구조누락: 참고기준 섹션 존재 여부, 소제목(H2) 3개 이상 여부 확인.
+
+verdict: fail 0개→pass, fail 1개이상 또는 warn 3개이상→fix, fail 3개이상이고 품질매우낮음→delete`;
+
+function getGeminiKey() { return document.getElementById('geminiKey').value.trim(); }
+
+async function callGemini(content) {
+  const key = getGeminiKey();
+  if (!key) throw new Error('Gemini API 키가 없습니다');
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: VERIFY_SYSTEM }] },
+        contents: [{ parts: [{ text: content }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 1200 }
+      })
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('JSON 파싱 실패');
+  return JSON.parse(match[0]);
+}
+
+async function testGeminiKey() {
+  const key = getGeminiKey();
+  if (!key) { showToast('API 키를 입력하세요', 'error'); return; }
+  document.getElementById('geminiStatus').textContent = '확인 중...';
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: '안녕' }] }], generationConfig: { maxOutputTokens: 10 } }) }
+    );
+    if (res.ok) {
+      document.getElementById('geminiStatus').textContent = '✓ 키 정상';
+      document.getElementById('geminiStatus').className = 'api-key-status ok';
+      showToast('Gemini API 연결 성공', 'success');
+    } else throw new Error((await res.json().catch(()=>({}))).error?.message || `HTTP ${res.status}`);
+  } catch(e) {
+    document.getElementById('geminiStatus').textContent = '⚠ ' + e.message;
+    showToast('키 오류: ' + e.message, 'error');
+  }
+}
+
+// ── WordPress 불러오기 ────────────────────────────────
+async function loadPosts() {
+  const url = (document.getElementById('wpUrl').value || '').trim().replace(/\/$/, '');
+  const perPage = parseInt(document.getElementById('perPage').value) || 50;
+  if (!url) { showToast('URL을 입력하세요', 'error'); return; }
+
+  document.getElementById('postList').innerHTML = '<div class="loading-state"><div class="spinner"></div>불러오는 중...</div>';
+  document.getElementById('loadStatus').textContent = '연결 중...';
+  document.getElementById('progressBar').style.width = '0%';
+
+  // DB 데이터 먼저 로드
+  document.getElementById('syncIndicator').textContent = 'DB 로딩 중...';
+  await loadDbData();
+
+  try {
+    const headRes = await fetch(`${url}/wp-json/wp/v2/posts?per_page=1`);
+    if (!headRes.ok) throw new Error(`HTTP ${headRes.status}`);
+    const total = parseInt(headRes.headers.get('X-WP-Total') || '0');
+
+    let fetched = [];
+    const pages = Math.ceil(Math.min(total, perPage) / 100);
+    for (let page = 1; page <= pages; page++) {
+      const limit = Math.min(100, perPage - fetched.length);
+      const res = await fetch(`${url}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt,content`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const batch = await res.json();
+      fetched = fetched.concat(batch);
+      document.getElementById('progressBar').style.width = Math.round(fetched.length / Math.min(total, perPage) * 100) + '%';
+      if (batch.length < limit) break;
+    }
+
+    let catMap = {};
+    try {
+      const cr = await fetch(`${url}/wp-json/wp/v2/categories?per_page=100`);
+      (await cr.json()).forEach(c => { catMap[c.id] = c.name; });
+    } catch {}
+
+    posts = fetched.map(p => {
+      const db = dbData[p.id] || {};
+      return {
+        id: p.id,
+        title: p.title?.rendered ? stripHtml(p.title.rendered) : '(제목 없음)',
+        link: p.link,
+        date: (p.date || '').slice(0, 10),
+        category: (p.categories || []).map(cid => catMap[cid] || `#${cid}`).join(', '),
+        excerpt: p.excerpt?.rendered ? stripHtml(p.excerpt.rendered).slice(0, 120) : '',
+        content: p.content?.rendered ? stripHtml(p.content.rendered).slice(0, 3000) : '',
+        status: db.status || 'unreviewed',
+        memo: db.memo || '',
+        result: db.result || null
+      };
+    });
+
+    document.getElementById('loadStatus').textContent = `✓ ${posts.length}개 로드 (전체 ${total}개)`;
+    document.getElementById('headerCount').textContent = `포스트 ${posts.length}개`;
+    renderList(); updateStats();
+    showToast(`${posts.length}개 불러왔습니다`, 'success');
+  } catch(e) {
+    document.getElementById('loadStatus').textContent = '⚠ ' + e.message;
+    document.getElementById('postList').innerHTML = `<div class="empty-state">연결 실패<br><small>${e.message}</small></div>`;
+    showToast('연결 실패', 'error');
+  }
+}
+
+// ── 단일 검증 ─────────────────────────────────────────
+async function verifySingle(id) {
+  const p = posts.find(x => x.id === id);
+  if (!p) return;
+  if (!getGeminiKey()) { showToast('Gemini API 키를 입력하세요', 'error'); return; }
+
+  p.status = 'verifying';
+  renderList();
+  if (currentId === id) selectPost(id);
+
+  try {
+    const result = await callGemini(`제목: ${p.title}\n\n본문:\n${p.content}`);
+    p.result = result;
+    p.status = result.verdict || 'fix';
+    p.memo = p.memo || result.summary || '';
+    const ok = await saveToDb(p);
+    renderList(); updateStats();
+    if (currentId === id) selectPost(id);
+    showToast(`검증 완료 — ${ok ? '☁ DB 저장됨' : '⚠ DB 저장 실패'}`, ok ? 'success' : 'error');
+  } catch(e) {
+    p.status = 'unreviewed';
+    renderList();
+    if (currentId === id) selectPost(id);
+    showToast('검증 실패: ' + e.message, 'error');
+  }
+}
+
+// ── 목록 ──────────────────────────────────────────────
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.toggle('active', t.dataset.f === f));
+  renderList();
+}
+
+function renderList() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = posts.filter(p => {
+    if (currentFilter !== 'all' && p.status !== currentFilter) return false;
+    if (q && !p.title.toLowerCase().includes(q) && !p.category.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    document.getElementById('postList').innerHTML = '<div class="empty-state">해당하는 포스트가 없습니다</div>';
+    return;
+  }
+
+  document.getElementById('postList').innerHTML = filtered.map(p => `
+    <div class="pitem ${currentId===p.id?'active':''}" onclick="selectPost(${p.id})">
+      <div class="pitem-title">${esc(p.title)}</div>
+      <div class="pitem-meta">
+        <span class="sdot ${p.status}"></span>
+        <span>${sLabel(p.status)}</span>
+        ${p.category ? `<span>· ${esc(p.category)}</span>` : ''}
+        <span>· ${p.date}</span>
+        ${p.result ? '<span style="color:var(--orange);">· AI완료</span>' : ''}
+      </div>
+    </div>
+  `).join('');
+  updateStats();
+}
+
+function updateStats() {
+  const cnt = { all:0, pass:0, fix:0, delete:0, unreviewed:0 };
+  posts.forEach(p => {
+    cnt.all++;
+    const s = p.status === 'verifying' ? 'unreviewed' : p.status;
+    cnt[s] = (cnt[s] || 0) + 1;
+  });
+  ['all','pass','fix','delete','unreviewed'].forEach(k => {
+    const el = document.getElementById('cnt-'+k); if (el) el.textContent = cnt[k];
+    const se = document.getElementById('s-'+k); if (se) se.textContent = cnt[k];
+  });
+  const reviewed = cnt.pass + cnt.fix + cnt.delete;
+  document.getElementById('progressBar').style.width = cnt.all > 0 ? (reviewed/cnt.all*100)+'%' : '0%';
+}
+
+// ── 상세 ──────────────────────────────────────────────
+function selectPost(id) {
+  currentId = id;
+  const p = posts.find(x => x.id === id);
+  if (!p) return;
+  renderList();
+  const hasKey = !!getGeminiKey();
+
+  document.getElementById('main').innerHTML = `
+    <div class="detail-wrap">
+      <div class="card">
+        <div class="card-body">
+          ${p.category ? `<div class="detail-category">${esc(p.category)}</div>` : ''}
+          <div class="detail-title">${esc(p.title)}</div>
+          <div class="detail-meta">
+            <span>📅 ${p.date}</span><span>#${p.id}</span>
+            <a href="${esc(p.link)}" target="_blank">🔗 WordPress에서 보기</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-title">검증 상태</div>
+          <button class="btn btn-green" onclick="verifySingle(${p.id})" ${hasKey&&p.status!=='verifying'?'':'disabled'}>
+            ${p.status==='verifying'?'<span class="spinner" style="display:inline-block;width:12px;height:12px;border-width:1.5px;vertical-align:middle;margin-right:4px;border-top-color:white;"></span>분석중...':'🤖 AI 검증'}
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="status-row">
+            <span class="status-label">상태:</span>
+            <button class="sbtn pass ${p.status==='pass'?'sel':''}" onclick="setStatus('pass')">✅ 통과</button>
+            <button class="sbtn fix ${p.status==='fix'?'sel':''}" onclick="setStatus('fix')">⚠️ 수정필요</button>
+            <button class="sbtn delete ${p.status==='delete'?'sel':''}" onclick="setStatus('delete')">🗑 삭제</button>
+            <button class="sbtn unreviewed ${p.status==='unreviewed'?'sel':''}" onclick="setStatus('unreviewed')">— 미검토</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:16px;">✨</span>
+          <div class="card-header-title">Gemini 자동 검증 결과</div>
+        </div>
+        ${p.status === 'verifying'
+          ? `<div class="spinner-wrap"><div class="spinner"></div><span class="spinner-text">Gemini가 분석 중입니다...</span></div>`
+          : p.result ? renderResult(p.result)
+          : `<div class="gemini-bar"><span style="font-size:16px;">💡</span><div class="gemini-desc">
+              <strong>AI 검증</strong> 버튼을 누르면 수치·기준, 금지표현, 용어오류, 구조누락을 자동 분석합니다.
+              ${!hasKey ? '<br><strong style="color:var(--orange);">→ Gemini API 키를 먼저 입력하세요</strong>' : ''}
+             </div></div>`}
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-header-title">📝 메모</div></div>
+        <div class="card-body">
+          <textarea class="memo-textarea" id="memoField" placeholder="수정 필요 사항 메모...">${esc(p.memo)}</textarea>
+          <div class="memo-row">
+            <span class="memo-sync-status" id="memoSyncStatus"></span>
+            <button class="btn btn-navy" onclick="saveMemo()">☁ 저장</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderResult(r) {
+  const sections = ['수치기준','금지표현','용어오류','구조누락'];
+  const icons = { pass:'✅', warn:'⚠️', fail:'❌' };
+  const totalFail = sections.reduce((n,s)=>n+(r[s]||[]).filter(i=>i.level==='fail').length,0);
+  const totalWarn = sections.reduce((n,s)=>n+(r[s]||[]).filter(i=>i.level==='warn').length,0);
+  const verdictClass = {pass:'verdict-pass',fix:'verdict-fix',delete:'verdict-delete'}[r.verdict]||'verdict-fix';
+  const verdictText = {pass:'✅ 통과',fix:'⚠️ 수정 필요',delete:'🗑 삭제 권장'}[r.verdict]||r.verdict;
+
+  let html = `<div class="result-wrap"><div class="result-summary">
+    ${totalFail>0?`<div class="result-badge rb-fail">❌ 오류 ${totalFail}건</div>`:''}
+    ${totalWarn>0?`<div class="result-badge rb-warn">⚠️ 경고 ${totalWarn}건</div>`:''}
+    ${totalFail===0&&totalWarn===0?`<div class="result-badge rb-pass">✅ 이상 없음</div>`:''}
+  </div>`;
+
+  sections.forEach(sec => {
+    const items = r[sec]||[];
+    html += `<div class="result-section"><div class="result-section-title">${sec}</div>`;
+    if (items.length===0) html += `<div class="result-item ri-pass"><span class="ri-icon">✅</span><span>이상 없음</span></div>`;
+    items.forEach(item => {
+      const cls = {pass:'ri-pass',warn:'ri-warn',fail:'ri-fail'}[item.level]||'ri-warn';
+      html += `<div class="result-item ${cls}"><span class="ri-icon">${icons[item.level]||'•'}</span><span>${esc(item.text)}</span></div>`;
+    });
+    html += `</div>`;
+  });
+  html += `<div class="verdict-box ${verdictClass}">${verdictText}${r.summary?` — ${esc(r.summary)}`:''}</div></div>`;
+  return html;
+}
+
+async function setStatus(status) {
+  const p = posts.find(x => x.id === currentId);
+  if (!p) return;
+  p.status = status;
+  selectPost(currentId); updateStats();
+  const ok = await saveToDb(p);
+  showToast(`${sLabel(status)}로 변경 — ${ok?'☁ DB 저장됨':'⚠ DB 저장 실패'}`, ok?'success':'error');
+}
+
+async function saveMemo() {
+  const p = posts.find(x => x.id === currentId);
+  if (!p) return;
+  p.memo = document.getElementById('memoField').value;
+  const statusEl = document.getElementById('memoSyncStatus');
+  if (statusEl) statusEl.textContent = '저장 중...';
+  const ok = await saveToDb(p);
+  if (statusEl) statusEl.textContent = ok ? '☁ 저장됨' : '⚠ 저장 실패';
+  showToast(ok ? '메모 저장됨' : '저장 실패', ok ? 'success' : 'error');
+}
+
+// ── 내보내기 ──────────────────────────────────────────
+function showExport() {
+  const lines = ['ID,제목,카테고리,날짜,상태,오류수,경고수,AI판정,메모,링크'];
+  posts.forEach(p => {
+    const failCnt = p.result ? ['수치기준','금지표현','용어오류','구조누락'].reduce((n,s)=>n+(p.result[s]||[]).filter(i=>i.level==='fail').length,0) : '';
+    const warnCnt = p.result ? ['수치기준','금지표현','용어오류','구조누락'].reduce((n,s)=>n+(p.result[s]||[]).filter(i=>i.level==='warn').length,0) : '';
+    lines.push([p.id,`"${p.title.replace(/"/g,'""')}"`,`"${p.category.replace(/"/g,'""')}"`,
+      p.date,sLabel(p.status),failCnt,warnCnt,p.result?sLabel(p.result.verdict):'',
+      `"${(p.memo||'').replace(/"/g,'""').replace(/\n/g,' ')}"`,p.link].join(','));
+  });
+  document.getElementById('exportText').value = lines.join('\n');
+  document.getElementById('exportModal').classList.add('show');
+}
+function closeExport() { document.getElementById('exportModal').classList.remove('show'); }
+function copyExport() { document.getElementById('exportText').select(); document.execCommand('copy'); showToast('복사됨','success'); }
+function downloadExport() {
+  const blob = new Blob(['\uFEFF'+document.getElementById('exportText').value],{type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `buildlibrary_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  closeExport();
+}
+
+// ── 유틸 ──────────────────────────────────────────────
+function stripHtml(html) { const d=document.createElement('div'); d.innerHTML=html; return d.textContent||d.innerText||''; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sLabel(s) { return {pass:'통과',fix:'수정필요',delete:'삭제',unreviewed:'미검토',verifying:'검증중'}[s]||s; }
+function showToast(msg,type='') {
+  const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  clearTimeout(t._t); t._t=setTimeout(()=>{t.className='toast';},2500);
+}
+
+document.getElementById('exportModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeExport();});
+
+// ── Service Worker 등록 ───────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ── 초기 DB 연결 확인 ────────────────────────────────
+window.addEventListener('load', async () => {
+  document.getElementById('syncIndicator').textContent = 'DB 연결 중...';
+  await loadDbData();
+});
+</script>
+</body>
+</html>
