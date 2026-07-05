@@ -1,8 +1,6 @@
-const CACHE = 'bl-verifier-v1';
-const ASSETS = ['./index.html', './manifest.json'];
+const CACHE = 'bl-verifier-v2';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
@@ -13,16 +11,16 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+// 네트워크 우선, 실패 시 캐시
 self.addEventListener('fetch', e => {
-  // Supabase / Gemini / WordPress API는 항상 네트워크 우선
-  if (e.request.url.includes('supabase.co') ||
-      e.request.url.includes('googleapis.com') ||
-      e.request.url.includes('buildlibrary.co.kr')) {
-    e.respondWith(fetch(e.request).catch(() => new Response('offline', { status: 503 })));
-    return;
-  }
-  // 앱 파일은 캐시 우선
+  if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request)
+      .then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return res;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
