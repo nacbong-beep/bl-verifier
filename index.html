@@ -492,10 +492,8 @@ function loadGeminiKey() {
   }
 }
 
-// 키 입력할 때마다 자동 저장
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('geminiKey').addEventListener('change', saveGeminiKey);
-});
+// 키 입력 후 포커스 벗어나면 자동 저장
+document.getElementById('geminiKey').addEventListener('change', saveGeminiKey);
 
 async function callGemini(content) {
   const key = getGeminiKey();
