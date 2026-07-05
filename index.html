@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="검증기">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 <!-- 아이콘 (인라인 SVG → base64) -->
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjMUIyRjVFIi8+PHRleHQgeD0iOTYiIHk9IjEyOCIgZm9udC1zaXplPSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNFODYxMkMiPvCfkYs8L3RleHQ+PC9zdmc+">
 <style>
@@ -817,7 +817,10 @@ document.getElementById('exportModal').addEventListener('click',e=>{if(e.target=
 // ── Service Worker 등록 ───────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    const swUrl = new URL('sw.js', location.href).href;
+    navigator.serviceWorker.register(swUrl)
+      .then(reg => console.log('SW 등록됨:', reg.scope))
+      .catch(err => console.log('SW 등록 실패:', err));
   });
 }
 
