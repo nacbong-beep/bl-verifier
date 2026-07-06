@@ -301,19 +301,6 @@
       <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
     </div>
 
-    <!-- Gemini -->
-    <div class="sidebar-section">
-      <div class="section-label">Gemini API</div>
-      <div class="api-key-row">
-        <input class="ifield" id="geminiKey" type="password" placeholder="AIza... (Gemini API 키)">
-        <button class="btn btn-ghost" onclick="testGeminiKey()">확인</button>
-      </div>
-      <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
-        <span class="api-key-status" id="geminiStatus">키 미입력</span>
-        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:10px;color:var(--navy);">키 발급 →</a>
-      </div>
-    </div>
-
     <!-- 필터 -->
     <div class="sidebar-section">
       <div class="section-label">필터</div>
@@ -352,7 +339,7 @@
   <div class="main" id="main">
     <div class="placeholder">
       <div class="placeholder-icon">🔍</div>
-      <div class="placeholder-text">포스트를 선택하면 여기서 검증합니다</div>
+      <div class="placeholder-text">포스트를 선택하세요</div>
     </div>
   </div>
 </div>
@@ -453,96 +440,6 @@ function setSyncStatus(ok, msg = '') {
   }
 }
 
-// ── Gemini ────────────────────────────────────────────
-const GEMINI_MODEL = 'gemini-2.0-flash';
-const VERIFY_SYSTEM = `당신은 건설 기술 문서 검증 전문가입니다.
-건설라이브러리 ARCHIVE 포스트를 아래 4가지 항목으로 검증하고, 반드시 JSON만 반환하세요. 다른 텍스트 없이 JSON만.
-
-반환 형식:
-{
-  "수치기준": [{"level":"pass|warn|fail","text":"설명"}],
-  "금지표현": [{"level":"pass|warn|fail","text":"설명"}],
-  "용어오류": [{"level":"pass|warn|fail","text":"설명"}],
-  "구조누락": [{"level":"pass|warn|fail","text":"설명"}],
-  "verdict": "pass|fix|delete",
-  "summary": "한 줄 종합 의견"
-}
-
-검증 기준:
-1. 수치기준: 수치가 등장할 때 KCS/KDS/KS 번호가 함께 있는지 확인. 없으면 warn. "일반적으로 ~mm다" 같은 단정 서술은 fail.
-2. 금지표현: "~년간의 경험", "전문가로서", "본 포스팅에서는", "이상으로 마치겠습니다" 등 → fail.
-3. 용어오류: "PHC파일 타설"→"항타"가 맞음, "조적 타설"→"사춤"이 맞음 등 건설 현장 용어 오류 체크.
-4. 구조누락: 참고기준 섹션 존재 여부, 소제목(H2) 3개 이상 여부 확인.
-
-verdict: fail 0개→pass, fail 1개이상 또는 warn 3개이상→fix, fail 3개이상이고 품질매우낮음→delete`;
-
-function getGeminiKey() { return document.getElementById('geminiKey').value.trim(); }
-
-function saveGeminiKey() {
-  const key = getGeminiKey();
-  if (key) localStorage.setItem('bl_gemini_key', key);
-}
-
-function loadGeminiKey() {
-  const key = localStorage.getItem('bl_gemini_key');
-  if (key) {
-    document.getElementById('geminiKey').value = key;
-    document.getElementById('geminiStatus').textContent = '✓ 저장된 키 로드됨';
-    document.getElementById('geminiStatus').className = 'api-key-status ok';
-  }
-}
-
-// 키 입력 후 포커스 벗어나면 자동 저장
-document.getElementById('geminiKey').addEventListener('change', saveGeminiKey);
-
-async function callGemini(content) {
-  const key = getGeminiKey();
-  if (!key) throw new Error('Gemini API 키가 없습니다');
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: VERIFY_SYSTEM }] },
-        contents: [{ parts: [{ text: content }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 1200 }
-      })
-    }
-  );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `HTTP ${res.status}`);
-  }
-  const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('JSON 파싱 실패');
-  return JSON.parse(match[0]);
-}
-
-async function testGeminiKey() {
-  const key = getGeminiKey();
-  if (!key) { showToast('API 키를 입력하세요', 'error'); return; }
-  document.getElementById('geminiStatus').textContent = '확인 중...';
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: '안녕' }] }], generationConfig: { maxOutputTokens: 10 } }) }
-    );
-    if (res.ok) {
-      document.getElementById('geminiStatus').textContent = '✓ 키 정상 (저장됨)';
-      document.getElementById('geminiStatus').className = 'api-key-status ok';
-      saveGeminiKey();
-      showToast('Gemini API 연결 성공 — 키 저장됨', 'success');
-    } else throw new Error((await res.json().catch(()=>({}))).error?.message || `HTTP ${res.status}`);
-  } catch(e) {
-    document.getElementById('geminiStatus').textContent = '⚠ ' + e.message;
-    showToast('키 오류: ' + e.message, 'error');
-  }
-}
-
 // ── WordPress 불러오기 ────────────────────────────────
 async function loadPosts() {
   const url = (document.getElementById('wpUrl').value || '').trim().replace(/\/$/, '');
@@ -566,7 +463,7 @@ async function loadPosts() {
     const pages = Math.ceil(Math.min(total, perPage) / 100);
     for (let page = 1; page <= pages; page++) {
       const limit = Math.min(100, perPage - fetched.length);
-      const res = await fetch(`${url}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt,content`);
+      const res = await fetch(`${url}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const batch = await res.json();
       fetched = fetched.concat(batch);
@@ -589,7 +486,6 @@ async function loadPosts() {
         date: (p.date || '').slice(0, 10),
         category: (p.categories || []).map(cid => catMap[cid] || `#${cid}`).join(', '),
         excerpt: p.excerpt?.rendered ? stripHtml(p.excerpt.rendered).slice(0, 120) : '',
-        content: p.content?.rendered ? stripHtml(p.content.rendered).slice(0, 3000) : '',
         status: db.status || 'unreviewed',
         memo: db.memo || '',
         result: db.result || null
@@ -604,33 +500,6 @@ async function loadPosts() {
     document.getElementById('loadStatus').textContent = '⚠ ' + e.message;
     document.getElementById('postList').innerHTML = `<div class="empty-state">연결 실패<br><small>${e.message}</small></div>`;
     showToast('연결 실패', 'error');
-  }
-}
-
-// ── 단일 검증 ─────────────────────────────────────────
-async function verifySingle(id) {
-  const p = posts.find(x => x.id === id);
-  if (!p) return;
-  if (!getGeminiKey()) { showToast('Gemini API 키를 입력하세요', 'error'); return; }
-
-  p.status = 'verifying';
-  renderList();
-  if (currentId === id) selectPost(id);
-
-  try {
-    const result = await callGemini(`제목: ${p.title}\n\n본문:\n${p.content}`);
-    p.result = result;
-    p.status = result.verdict || 'fix';
-    p.memo = p.memo || result.summary || '';
-    const ok = await saveToDb(p);
-    renderList(); updateStats();
-    if (currentId === id) selectPost(id);
-    showToast(`검증 완료 — ${ok ? '☁ DB 저장됨' : '⚠ DB 저장 실패'}`, ok ? 'success' : 'error');
-  } catch(e) {
-    p.status = 'unreviewed';
-    renderList();
-    if (currentId === id) selectPost(id);
-    showToast('검증 실패: ' + e.message, 'error');
   }
 }
 
@@ -662,7 +531,6 @@ function renderList() {
         <span>${sLabel(p.status)}</span>
         ${p.category ? `<span>· ${esc(p.category)}</span>` : ''}
         <span>· ${p.date}</span>
-        ${p.result ? '<span style="color:var(--orange);">· AI완료</span>' : ''}
       </div>
     </div>
   `).join('');
@@ -673,8 +541,7 @@ function updateStats() {
   const cnt = { all:0, pass:0, fix:0, delete:0, unreviewed:0 };
   posts.forEach(p => {
     cnt.all++;
-    const s = p.status === 'verifying' ? 'unreviewed' : p.status;
-    cnt[s] = (cnt[s] || 0) + 1;
+    cnt[p.status] = (cnt[p.status] || 0) + 1;
   });
   ['all','pass','fix','delete','unreviewed'].forEach(k => {
     const el = document.getElementById('cnt-'+k); if (el) el.textContent = cnt[k];
@@ -690,7 +557,6 @@ function selectPost(id) {
   const p = posts.find(x => x.id === id);
   if (!p) return;
   renderList();
-  const hasKey = !!getGeminiKey();
 
   document.getElementById('main').innerHTML = `
     <div class="detail-wrap">
@@ -708,9 +574,6 @@ function selectPost(id) {
       <div class="card">
         <div class="card-header">
           <div class="card-header-title">검증 상태</div>
-          <button class="btn btn-green" onclick="verifySingle(${p.id})" ${hasKey&&p.status!=='verifying'?'':'disabled'}>
-            ${p.status==='verifying'?'<span class="spinner" style="display:inline-block;width:12px;height:12px;border-width:1.5px;vertical-align:middle;margin-right:4px;border-top-color:white;"></span>분석중...':'🤖 AI 검증'}
-          </button>
         </div>
         <div class="card-body">
           <div class="status-row">
@@ -721,20 +584,6 @@ function selectPost(id) {
             <button class="sbtn unreviewed ${p.status==='unreviewed'?'sel':''}" onclick="setStatus('unreviewed')">— 미검토</button>
           </div>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span style="font-size:16px;">✨</span>
-          <div class="card-header-title">Gemini 자동 검증 결과</div>
-        </div>
-        ${p.status === 'verifying'
-          ? `<div class="spinner-wrap"><div class="spinner"></div><span class="spinner-text">Gemini가 분석 중입니다...</span></div>`
-          : p.result ? renderResult(p.result)
-          : `<div class="gemini-bar"><span style="font-size:16px;">💡</span><div class="gemini-desc">
-              <strong>AI 검증</strong> 버튼을 누르면 수치·기준, 금지표현, 용어오류, 구조누락을 자동 분석합니다.
-              ${!hasKey ? '<br><strong style="color:var(--orange);">→ Gemini API 키를 먼저 입력하세요</strong>' : ''}
-             </div></div>`}
       </div>
 
       <div class="card">
@@ -749,34 +598,6 @@ function selectPost(id) {
       </div>
     </div>
   `;
-}
-
-function renderResult(r) {
-  const sections = ['수치기준','금지표현','용어오류','구조누락'];
-  const icons = { pass:'✅', warn:'⚠️', fail:'❌' };
-  const totalFail = sections.reduce((n,s)=>n+(r[s]||[]).filter(i=>i.level==='fail').length,0);
-  const totalWarn = sections.reduce((n,s)=>n+(r[s]||[]).filter(i=>i.level==='warn').length,0);
-  const verdictClass = {pass:'verdict-pass',fix:'verdict-fix',delete:'verdict-delete'}[r.verdict]||'verdict-fix';
-  const verdictText = {pass:'✅ 통과',fix:'⚠️ 수정 필요',delete:'🗑 삭제 권장'}[r.verdict]||r.verdict;
-
-  let html = `<div class="result-wrap"><div class="result-summary">
-    ${totalFail>0?`<div class="result-badge rb-fail">❌ 오류 ${totalFail}건</div>`:''}
-    ${totalWarn>0?`<div class="result-badge rb-warn">⚠️ 경고 ${totalWarn}건</div>`:''}
-    ${totalFail===0&&totalWarn===0?`<div class="result-badge rb-pass">✅ 이상 없음</div>`:''}
-  </div>`;
-
-  sections.forEach(sec => {
-    const items = r[sec]||[];
-    html += `<div class="result-section"><div class="result-section-title">${sec}</div>`;
-    if (items.length===0) html += `<div class="result-item ri-pass"><span class="ri-icon">✅</span><span>이상 없음</span></div>`;
-    items.forEach(item => {
-      const cls = {pass:'ri-pass',warn:'ri-warn',fail:'ri-fail'}[item.level]||'ri-warn';
-      html += `<div class="result-item ${cls}"><span class="ri-icon">${icons[item.level]||'•'}</span><span>${esc(item.text)}</span></div>`;
-    });
-    html += `</div>`;
-  });
-  html += `<div class="verdict-box ${verdictClass}">${verdictText}${r.summary?` — ${esc(r.summary)}`:''}</div></div>`;
-  return html;
 }
 
 async function setStatus(status) {
@@ -824,7 +645,7 @@ function downloadExport() {
 // ── 유틸 ──────────────────────────────────────────────
 function stripHtml(html) { const d=document.createElement('div'); d.innerHTML=html; return d.textContent||d.innerText||''; }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function sLabel(s) { return {pass:'통과',fix:'수정필요',delete:'삭제',unreviewed:'미검토',verifying:'검증중'}[s]||s; }
+function sLabel(s) { return {pass:'통과',fix:'수정필요',delete:'삭제',unreviewed:'미검토'}[s]||s; }
 function showToast(msg,type='') {
   const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(type?' '+type:'');
   clearTimeout(t._t); t._t=setTimeout(()=>{t.className='toast';},2500);
@@ -844,7 +665,6 @@ if ('serviceWorker' in navigator) {
 
 // ── 초기 DB 연결 확인 ────────────────────────────────
 window.addEventListener('load', async () => {
-  loadGeminiKey();
   document.getElementById('syncIndicator').textContent = 'DB 연결 중...';
   await loadDbData();
 });
