@@ -274,12 +274,9 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
     <div class="sidebar-section">
       <div class="section-label">WordPress</div>
       <div class="input-row">
-        <input class="ifield" id="wpUrl" type="text" value="https://buildlibrary.co.kr">
-      </div>
-      <div class="input-row">
-        <input class="ifield" id="perPage" type="number" value="50" min="1" max="200" style="max-width:70px;">
+        <input class="ifield" id="perPage" type="number" value="100" min="1" max="300" style="max-width:70px;">
         <span style="font-size:11px;color:var(--text-sub);align-self:center;">개</span>
-        <button class="btn btn-navy" style="flex:1;" onclick="loadPosts()">불러오기</button>
+        <button class="btn btn-navy" style="flex:1;" onclick="loadPosts()">🔄 새로고침</button>
       </div>
       <div id="loadStatus" style="font-size:10px;color:var(--text-sub);margin-top:4px;"></div>
       <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
@@ -358,6 +355,7 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 const SB_URL = 'https://nmkkzwhcuznpyjnxhrem.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ta2t6d2hjdXpucHlqbnhocmVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNTk3NjMsImV4cCI6MjA5ODczNTc2M30.pIO67pp2NG5OGHwAxatISrXtVCFL8nLBWVjWWx3LeKY';
 const TABLE = 'post_verifications';
+const WP_URL = 'https://buildlibrary.co.kr';
 
 const sbH = {
   'Content-Type':'application/json',
@@ -372,39 +370,83 @@ async function sbFetch(path, opts={}) {
   return res.json().catch(()=>null);
 }
 
-async function loadDbData() {
+// ① 목록용 — id·status·memo·HTML 진행도만 (가벼움)
+async function loadDbMeta() {
   try {
     const data = await sbFetch(TABLE+'?select=id,status,memo,html_orig,html_gemini,html_gpt,html_final');
     dbData = {};
-    (data||[]).forEach(r=>{ dbData[r.id]=r; });
+    (data||[]).forEach(r=>{
+      dbData[r.id] = {
+        status: r.status,
+        memo: r.memo,
+        // HTML은 있는지 여부만 체크 (진행도 표시용)
+        has_orig: !!r.html_orig,
+        has_gemini: !!r.html_gemini,
+        has_gpt: !!r.html_gpt,
+        has_final: !!r.html_final
+      };
+    });
     setSyncStatus(true);
-  } catch(e) { setSyncStatus(false,e.message); }
+    return true;
+  } catch(e) { setSyncStatus(false, e.message); return false; }
 }
 
-async function saveToDb(p) {
+// ② 상세용 — 선택한 포스트의 HTML만 (포스트 클릭 시)
+async function loadDbHtml(id) {
+  try {
+    const data = await sbFetch(`${TABLE}?select=html_orig,html_gemini,html_gpt,html_final&id=eq.${id}`);
+    return data?.[0] || {};
+  } catch(e) { return {}; }
+}
+
+// ③ 상태·메모만 저장 (가벼움)
+async function saveStatusMemo(p) {
   try {
     await sbFetch(TABLE, {
       method:'POST',
       headers:{'Prefer':'resolution=merge-duplicates,return=representation'},
       body:JSON.stringify({
         id:p.id, title:p.title, status:p.status, memo:p.memo,
+        updated_at:new Date().toISOString()
+      })
+    });
+    setSyncStatus(true); return true;
+  } catch(e) { setSyncStatus(false, e.message); return false; }
+}
+
+// ④ HTML만 저장 (무거움 — 명시적 저장 시에만)
+async function saveHtml(p) {
+  try {
+    await sbFetch(TABLE, {
+      method:'POST',
+      headers:{'Prefer':'resolution=merge-duplicates,return=representation'},
+      body:JSON.stringify({
+        id:p.id, title:p.title,
         html_orig:p.html_orig||'', html_gemini:p.html_gemini||'',
         html_gpt:p.html_gpt||'', html_final:p.html_final||'',
         updated_at:new Date().toISOString()
       })
     });
+    // 로컬 dbData 진행도 업데이트
+    if (dbData[p.id]) {
+      dbData[p.id].has_orig = !!p.html_orig;
+      dbData[p.id].has_gemini = !!p.html_gemini;
+      dbData[p.id].has_gpt = !!p.html_gpt;
+      dbData[p.id].has_final = !!p.html_final;
+    }
     setSyncStatus(true); return true;
-  } catch(e) { setSyncStatus(false,e.message); return false; }
+  } catch(e) { setSyncStatus(false, e.message); return false; }
 }
 
-function setSyncStatus(ok,msg='') {
-  const el=document.getElementById('syncIndicator');
-  el.textContent = ok?'☁ DB 동기화됨':'⚠ DB 오류';
+function setSyncStatus(ok, msg='') {
+  const el = document.getElementById('syncIndicator');
+  el.textContent = ok ? '☁ DB 동기화됨' : '⚠ DB 오류';
   el.className = 'sync-indicator '+(ok?'ok':'err');
 }
 
 // ── 상태 ──────────────────────────────────────────────
 let posts=[], currentId=null, currentFilter='all', dbData={};
+let wpTotal = 0; // WordPress 전체 포스트 수 캐시
 
 // ── Claude API 키 ──────────────────────────────────────
 function saveClaudeKey() {
@@ -452,68 +494,73 @@ async function callClaude(prompt) {
   return data.content?.[0]?.text||'';
 }
 
-// ── WordPress 불러오기 ────────────────────────────────
-async function loadPosts() {
-  const url=(document.getElementById('wpUrl').value||'').trim().replace(/\/$/,'');
-  const perPage=parseInt(document.getElementById('perPage').value)||50;
-  if (!url) { showToast('URL을 입력하세요','error'); return; }
+// ── WordPress 로드 (자동/수동 공용) ──────────────────
+async function loadWpPosts() {
+  const url = WP_URL;
+  const perPage = parseInt(document.getElementById('perPage').value) || 100;
 
-  document.getElementById('postList').innerHTML='<div class="loading-state"><div class="spinner spinner-navy"></div>불러오는 중...</div>';
-  document.getElementById('loadStatus').textContent='연결 중...';
-  document.getElementById('progressBar').style.width='0%';
-  document.getElementById('syncIndicator').textContent='DB 로딩 중...';
-  await loadDbData();
+  document.getElementById('loadStatus').textContent = '연결 중...';
+  document.getElementById('progressBar').style.width = '0%';
 
   try {
-    const headRes=await fetch(`${url}/wp-json/wp/v2/posts?per_page=1`);
+    const headRes = await fetch(`${url}/wp-json/wp/v2/posts?per_page=1`);
     if (!headRes.ok) throw new Error(`HTTP ${headRes.status}`);
-    const total=parseInt(headRes.headers.get('X-WP-Total')||'0');
+    wpTotal = parseInt(headRes.headers.get('X-WP-Total') || '0');
 
-    let fetched=[];
-    const pages=Math.ceil(Math.min(total,perPage)/100);
-    for (let page=1;page<=pages;page++) {
-      const limit=Math.min(100,perPage-fetched.length);
-      const res=await fetch(`${url}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt,content`);
+    let fetched = [];
+    const pages = Math.ceil(Math.min(wpTotal, perPage) / 100);
+    for (let page = 1; page <= pages; page++) {
+      const limit = Math.min(100, perPage - fetched.length);
+      const res = await fetch(`${url}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt,content`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const batch=await res.json();
-      fetched=fetched.concat(batch);
-      document.getElementById('progressBar').style.width=Math.round(fetched.length/Math.min(total,perPage)*100)+'%';
-      if (batch.length<limit) break;
+      const batch = await res.json();
+      fetched = fetched.concat(batch);
+      document.getElementById('progressBar').style.width = Math.round(fetched.length / Math.min(wpTotal, perPage) * 100) + '%';
+      if (batch.length < limit) break;
     }
 
-    let catMap={};
+    let catMap = {};
     try {
-      const cr=await fetch(`${url}/wp-json/wp/v2/categories?per_page=100`);
-      (await cr.json()).forEach(c=>{catMap[c.id]=c.name;});
+      const cr = await fetch(`${url}/wp-json/wp/v2/categories?per_page=100`);
+      (await cr.json()).forEach(c => { catMap[c.id] = c.name; });
     } catch {}
 
-    posts=fetched.map(p=>{
-      const db=dbData[p.id]||{};
+    posts = fetched.map(p => {
+      const db = dbData[p.id] || {};
       return {
-        id:p.id,
-        title:p.title?.rendered?stripHtml(p.title.rendered):'(제목 없음)',
-        link:p.link,
-        date:(p.date||'').slice(0,10),
-        category:(p.categories||[]).map(cid=>catMap[cid]||`#${cid}`).join(', '),
-        excerpt:p.excerpt?.rendered?stripHtml(p.excerpt.rendered).slice(0,120):'',
-        status:db.status||'unreviewed',
-        memo:db.memo||'',
-        html_orig:db.html_orig || (p.content?.rendered || ''),
-        html_gemini:db.html_gemini||'',
-        html_gpt:db.html_gpt||'',
-        html_final:db.html_final||''
+        id: p.id,
+        title: p.title?.rendered ? stripHtml(p.title.rendered) : '(제목 없음)',
+        link: p.link,
+        date: (p.date || '').slice(0, 10),
+        category: (p.categories || []).map(cid => catMap[cid] || `#${cid}`).join(', '),
+        excerpt: p.excerpt?.rendered ? stripHtml(p.excerpt.rendered).slice(0, 120) : '',
+        wpContent: p.content?.rendered || '', // WordPress 원본 (임시 보관)
+        status: db.status || 'unreviewed',
+        memo: db.memo || '',
+        // HTML은 진행도만 로컬 보관, 실제 내용은 클릭 시 로드
+        has_orig: db.has_orig || false,
+        has_gemini: db.has_gemini || false,
+        has_gpt: db.has_gpt || false,
+        has_final: db.has_final || false,
+        // HTML 캐시 (한 번 로드 후 재사용)
+        html_orig: null, html_gemini: null, html_gpt: null, html_final: null
       };
     });
 
-    document.getElementById('loadStatus').textContent=`✓ ${posts.length}개 로드 (전체 ${total}개)`;
-    document.getElementById('headerCount').textContent=`포스트 ${posts.length}개`;
+    document.getElementById('loadStatus').textContent = `✓ ${posts.length}개 (전체 ${wpTotal}개)`;
+    document.getElementById('headerCount').textContent = `포스트 ${posts.length}개`;
     renderList(); updateStats();
-    showToast(`${posts.length}개 불러왔습니다`,'success');
+    showToast(`${posts.length}개 로드됨`, 'success');
   } catch(e) {
-    document.getElementById('loadStatus').textContent='⚠ '+e.message;
-    document.getElementById('postList').innerHTML=`<div class="empty-state">연결 실패<br><small>${e.message}</small></div>`;
-    showToast('연결 실패','error');
+    document.getElementById('loadStatus').textContent = '⚠ ' + e.message;
+    document.getElementById('postList').innerHTML = `<div class="empty-state">연결 실패<br><small>${e.message}</small></div>`;
+    showToast('연결 실패', 'error');
   }
+}
+
+// 수동 새로고침 (새 포스트 확인용)
+async function loadPosts() {
+  await Promise.all([loadDbMeta(), loadWpPosts()]);
 }
 
 // ── 목록 ──────────────────────────────────────────────
@@ -536,13 +583,8 @@ function renderList() {
     return;
   }
 
-  // HTML 작업 진행도 표시
   const htmlProgress = p => {
-    let filled = 0;
-    if (p.html_orig) filled++;
-    if (p.html_gemini) filled++;
-    if (p.html_gpt) filled++;
-    if (p.html_final) filled++;
+    let filled = (p.has_orig?1:0)+(p.has_gemini?1:0)+(p.has_gpt?1:0)+(p.has_final?1:0);
     return filled > 0 ? `<span style="color:var(--purple);font-size:9px;">HTML ${filled}/4</span>` : '';
   };
 
@@ -573,11 +615,25 @@ function updateStats() {
 }
 
 // ── 상세 ──────────────────────────────────────────────
-function selectPost(id) {
-  currentId=id;
-  const p=posts.find(x=>x.id===id);
+async function selectPost(id) {
+  currentId = id;
+  const p = posts.find(x => x.id === id);
   if (!p) return;
   renderList();
+
+  // HTML이 아직 로드 안 됐으면 Supabase에서 로드
+  if (p.html_orig === null) {
+    const db = await loadDbHtml(id);
+    p.html_orig = db.html_orig || p.wpContent || '';
+    p.html_gemini = db.html_gemini || '';
+    p.html_gpt = db.html_gpt || '';
+    p.html_final = db.html_final || '';
+    // 진행도 업데이트
+    p.has_orig = !!p.html_orig;
+    p.has_gemini = !!p.html_gemini;
+    p.has_gpt = !!p.html_gpt;
+    p.has_final = !!p.html_final;
+  }
 
   const charCount = s => s ? `${s.length.toLocaleString()}자` : '0자';
 
@@ -783,7 +839,7 @@ ${gpt || '(미입력)'}`;
 
     p.html_final = html;
     p.ideas = { summary, light, insight, keywords };
-    const ok = await saveToDb(p);
+    const ok = await saveHtml(p);
 
     // 최종 HTML 표시
     document.getElementById('claude-generate-area').innerHTML=`
@@ -881,13 +937,15 @@ function renderIdeas({ summary, light, insight, keywords }) {
 async function saveAllHtml() {
   const p = posts.find(x=>x.id===currentId);
   if (!p) return;
-  p.html_orig = document.getElementById('html-orig')?.value || p.html_orig;
-  p.html_gemini = document.getElementById('html-gemini')?.value || p.html_gemini;
-  p.html_gpt = document.getElementById('html-gpt')?.value || p.html_gpt;
-  p.html_final = document.getElementById('html-final')?.value || p.html_final;
-  const ok = await saveToDb(p);
+  p.html_orig = document.getElementById('html-orig')?.value ?? p.html_orig;
+  p.html_gemini = document.getElementById('html-gemini')?.value ?? p.html_gemini;
+  p.html_gpt = document.getElementById('html-gpt')?.value ?? p.html_gpt;
+  p.html_final = document.getElementById('html-final')?.value ?? p.html_final;
+  p.has_orig = !!p.html_orig; p.has_gemini = !!p.html_gemini;
+  p.has_gpt = !!p.html_gpt; p.has_final = !!p.html_final;
+  const ok = await saveHtml(p);
   renderList();
-  showToast(ok?'☁ 전체 저장됨':'⚠ 저장 실패', ok?'success':'error');
+  showToast(ok ? '☁ HTML 저장됨' : '⚠ 저장 실패', ok?'success':'error');
 }
 
 // ── 상태 변경 ─────────────────────────────────────────
@@ -895,20 +953,22 @@ async function setStatus(status) {
   const p = posts.find(x=>x.id===currentId);
   if (!p) return;
   p.status = status;
+  if (dbData[p.id]) dbData[p.id].status = status;
   selectPost(currentId); updateStats();
-  const ok = await saveToDb(p);
-  showToast(`${sLabel(status)}로 변경 — ${ok?'☁ DB 저장됨':'⚠ DB 저장 실패'}`, ok?'success':'error');
+  const ok = await saveStatusMemo(p);
+  showToast(`${sLabel(status)}로 변경 — ${ok?'☁ 저장됨':'⚠ 저장 실패'}`, ok?'success':'error');
 }
 
 async function saveMemo() {
   const p = posts.find(x=>x.id===currentId);
   if (!p) return;
   p.memo = document.getElementById('memoField').value;
+  if (dbData[p.id]) dbData[p.id].memo = p.memo;
   const statusEl = document.getElementById('memoSyncStatus');
-  if (statusEl) statusEl.textContent='저장 중...';
-  const ok = await saveToDb(p);
-  if (statusEl) statusEl.textContent = ok?'☁ 저장됨':'⚠ 저장 실패';
-  showToast(ok?'메모 저장됨':'저장 실패', ok?'success':'error');
+  if (statusEl) statusEl.textContent = '저장 중...';
+  const ok = await saveStatusMemo(p);
+  if (statusEl) statusEl.textContent = ok ? '☁ 저장됨' : '⚠ 저장 실패';
+  showToast(ok ? '메모 저장됨' : '저장 실패', ok?'success':'error');
 }
 
 // ── 내보내기 ──────────────────────────────────────────
@@ -954,11 +1014,18 @@ if('serviceWorker' in navigator && location.protocol !== 'file:'){
   });
 }
 
-// ── 초기화 ────────────────────────────────────────────
-window.addEventListener('load', async ()=>{
+// ── 초기화 — 접속 시 자동 실행 ──────────────────────
+window.addEventListener('load', async () => {
   loadClaudeKey();
-  document.getElementById('syncIndicator').textContent='DB 연결 중...';
-  await loadDbData();
+
+  // DB 메타 + WordPress 동시 로드
+  document.getElementById('postList').innerHTML = '<div class="loading-state"><div class="spinner spinner-navy"></div>불러오는 중...</div>';
+  document.getElementById('syncIndicator').textContent = '연결 중...';
+
+  await Promise.all([
+    loadDbMeta(),
+    loadWpPosts()
+  ]);
 });
 </script>
 </body>
