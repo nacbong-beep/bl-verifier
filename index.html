@@ -470,7 +470,7 @@ async function loadPosts() {
     const pages=Math.ceil(Math.min(total,perPage)/100);
     for (let page=1;page<=pages;page++) {
       const limit=Math.min(100,perPage-fetched.length);
-      const res=await fetch(`${url}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt`);
+      const res=await fetch(`${url}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt,content`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const batch=await res.json();
       fetched=fetched.concat(batch);
@@ -495,7 +495,7 @@ async function loadPosts() {
         excerpt:p.excerpt?.rendered?stripHtml(p.excerpt.rendered).slice(0,120):'',
         status:db.status||'unreviewed',
         memo:db.memo||'',
-        html_orig:db.html_orig||'',
+        html_orig:db.html_orig || (p.content?.rendered || ''),
         html_gemini:db.html_gemini||'',
         html_gpt:db.html_gpt||'',
         html_final:db.html_final||''
