@@ -178,6 +178,34 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .memo-textarea:focus{border-color:var(--navy);}
 .memo-sync-status{font-size:10px;color:var(--text-sub);}
 
+/* 미리보기 모달 */
+.preview-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.preview-modal-overlay.show{opacity:1;pointer-events:all;}
+.preview-modal{background:white;border-radius:12px;width:90vw;max-width:860px;height:85vh;display:flex;flex-direction:column;transform:scale(0.95);transition:transform 0.2s;overflow:hidden;}
+.preview-modal-overlay.show .preview-modal{transform:scale(1);}
+.preview-modal-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.preview-modal-title{font-size:13px;font-weight:600;color:var(--navy);flex:1;}
+.preview-frame{flex:1;border:none;width:100%;background:white;}
+.preview-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;}
+.preview-tab{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text-sub);border-bottom:2px solid transparent;transition:all 0.15s;}
+.preview-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+
+/* 변경사항 카드 */
+.diff-card{margin-top:10px;}
+.diff-item{display:flex;gap:10px;padding:10px 12px;border-radius:8px;margin-bottom:6px;font-size:12px;line-height:1.6;border-left:3px solid transparent;}
+.diff-item.add{background:#E8F6EF;border-left-color:var(--green);}
+.diff-item.remove{background:var(--red-light);border-left-color:var(--red);}
+.diff-item.modify{background:var(--yellow-light);border-left-color:var(--yellow);}
+.diff-item.safe{background:var(--navy-light);border-left-color:var(--navy);}
+.diff-type{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;flex-shrink:0;align-self:flex-start;margin-top:2px;}
+.diff-type.add{background:var(--green);color:white;}
+.diff-type.remove{background:var(--red);color:white;}
+.diff-type.modify{background:var(--yellow);color:white;}
+.diff-type.safe{background:var(--navy);color:white;}
+.diff-content{flex:1;}
+.diff-comment{font-weight:600;color:var(--text);margin-bottom:3px;}
+.diff-detail{color:var(--text-sub);font-size:11px;}
+
 /* 모달 */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .modal-overlay.show{opacity:1;pointer-events:all;}
@@ -298,6 +326,18 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
       <div class="placeholder-icon">📋</div>
       <div class="placeholder-text">포스트를 선택하세요</div>
     </div>
+  </div>
+</div>
+
+<!-- 미리보기 모달 -->
+<div class="preview-modal-overlay" id="previewModal">
+  <div class="preview-modal">
+    <div class="preview-modal-header">
+      <div class="preview-modal-title" id="previewTitle">HTML 미리보기</div>
+      <button class="btn btn-ghost" onclick="closePreview()" style="font-size:11px;padding:5px 10px;">✕ 닫기</button>
+    </div>
+    <div class="preview-tabs" id="previewTabs"></div>
+    <iframe class="preview-frame" id="previewFrame"></iframe>
   </div>
 </div>
 
@@ -606,6 +646,7 @@ async function selectPost(id) {
                 <span class="html-slot-badge badge-orig">원본</span>
                 <span class="html-slot-label">자동포스팅 원본 HTML</span>
                 <span class="html-char-count" id="cnt-orig">${charCount(p.html_orig)}</span>
+                <button class="btn btn-ghost" style="font-size:10px;padding:3px 7px;" onclick="showPreview('orig')">👁 미리보기</button>
               </div>
               <textarea class="html-textarea" id="html-orig" placeholder="WordPress 자동포스팅 원본 HTML..." oninput="updateCharCount('orig')">${esc(p.html_orig)}</textarea>
             </div>
@@ -616,6 +657,7 @@ async function selectPost(id) {
                 <span class="html-slot-badge badge-gpt">ChatGPT</span>
                 <span class="html-slot-label">ChatGPT 수동검토 HTML</span>
                 <span class="html-char-count" id="cnt-gemini">${charCount(p.html_gemini)}</span>
+                <button class="btn btn-ghost" style="font-size:10px;padding:3px 7px;" onclick="showPreview('gemini')">👁 미리보기</button>
               </div>
               <textarea class="html-textarea" id="html-gemini" placeholder="ChatGPT로 검토 후 수정한 HTML..." oninput="updateCharCount('gemini')">${esc(p.html_gemini)}</textarea>
             </div>
@@ -626,6 +668,7 @@ async function selectPost(id) {
                 <span class="html-slot-badge badge-claude">Claude</span>
                 <span class="html-slot-label">Claude 수동검토 HTML</span>
                 <span class="html-char-count" id="cnt-gpt">${charCount(p.html_gpt)}</span>
+                <button class="btn btn-ghost" style="font-size:10px;padding:3px 7px;" onclick="showPreview('gpt')">👁 미리보기</button>
               </div>
               <textarea class="html-textarea" id="html-gpt" placeholder="Claude로 검토 후 수정한 HTML..." oninput="updateCharCount('gpt')">${esc(p.html_gpt)}</textarea>
             </div>
@@ -636,6 +679,7 @@ async function selectPost(id) {
                 <span class="html-slot-badge badge-final">Gemini 최종</span>
                 <span class="html-slot-label">Gemini API 자동 생성 최종본</span>
                 <span class="html-char-count" id="cnt-final">${charCount(p.html_final)}</span>
+                ${p.html_final ? `<button class="btn btn-ghost" style="font-size:10px;padding:3px 7px;" onclick="showPreview('final')">👁 미리보기</button>` : ''}
               </div>
               <div id="gemini-generate-area">
                 ${p.html_final ? `
@@ -656,6 +700,9 @@ async function selectPost(id) {
           </div>
         </div>
       </div>
+
+      <!-- 변경사항 분석 -->
+      <div id="diff-section"></div>
 
     </div>
   `;
@@ -698,16 +745,48 @@ function loadGeminiKey() {
 
 function getGeminiKey() { return document.getElementById('geminiKey').value.trim(); }
 
-// ── Gemini 최종본 생성 ────────────────────────────────
+// ── HTML 미리보기 ─────────────────────────────────────
+function showPreview(type) {
+  const labels = { orig:'원본', gemini:'ChatGPT 검토', gpt:'Claude 검토', final:'Gemini 최종' };
+  const ta = document.getElementById('html-'+type);
+  if (!ta || !ta.value.trim()) { showToast('내용이 없습니다','error'); return; }
+
+  const html = ta.value;
+  const frame = document.getElementById('previewFrame');
+  const title = document.getElementById('previewTitle');
+  title.textContent = `👁 ${labels[type]||type} 미리보기`;
+
+  // iframe에 렌더링
+  frame.srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;max-width:800px;margin:0 auto;font-size:14px;line-height:1.8;color:#2C3E50;}
+    h2{color:#1B2F5E;font-size:18px;margin:20px 0 10px;}h3{color:#2C3E50;font-size:15px;margin:16px 0 8px;}
+    table{border-collapse:collapse;width:100%;margin:12px 0;}th,td{border:1px solid #ddd;padding:8px 12px;font-size:13px;}
+    th{background:#E8ECF5;font-weight:600;}ul,ol{padding-left:20px;margin:8px 0;}li{margin:4px 0;}
+    p{margin:8px 0;}</style></head><body>${html}</body></html>`;
+
+  document.getElementById('previewModal').classList.add('show');
+}
+
+function closePreview() {
+  document.getElementById('previewModal').classList.remove('show');
+  document.getElementById('previewFrame').srcdoc = '';
+}
+
+document.getElementById('previewModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closePreview();
+});
+
+// ── Gemini 최종본 생성 (HTML + 변경사항 동시) ────────
 async function generateFinal() {
   const p = posts.find(x=>x.id===currentId);
   if (!p) return;
 
-  const gpt = document.getElementById('html-gemini')?.value?.trim() || ''; // ChatGPT
-  const claude = document.getElementById('html-gpt')?.value?.trim() || '';  // Claude
-  const orig = document.getElementById('html-orig')?.value?.trim() || '';
+  const originalHtml = document.getElementById('html-orig')?.value?.trim() || '';
+  const chatgptHtml = document.getElementById('html-gemini')?.value?.trim() || '';
+  const claudeHtml = document.getElementById('html-gpt')?.value?.trim() || '';
+  const referenceNotes = document.getElementById('memoField')?.value?.trim() || '';
 
-  if (!gpt && !claude) { showToast('ChatGPT 또는 Claude HTML을 먼저 입력하세요','error'); return; }
+  if (!chatgptHtml && !claudeHtml) { showToast('ChatGPT 또는 Claude HTML을 먼저 입력하세요','error'); return; }
 
   const key = getGeminiKey();
   if (!key) { showToast('Gemini API 키를 먼저 입력하세요','error'); return; }
@@ -715,13 +794,14 @@ async function generateFinal() {
   document.getElementById('gemini-generate-area').innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;padding:12px;background:var(--green-light);border-radius:8px;font-size:12px;color:var(--green);">
       <div class="spinner" style="border-top-color:var(--green);"></div>
-      Gemini가 두 버전을 비교 분석 중입니다...
+      Gemini가 분석 중입니다...
     </div>
   `;
+  document.getElementById('diff-section').innerHTML = '';
 
-const prompt = `
+  const prompt = `
 당신은 건설 기술 콘텐츠 편집 전문가입니다.
-아래 3개의 HTML 버전을 비교하여 최종 발행용 HTML을 생성하세요.
+아래 3개의 HTML 버전을 비교하여 최종 발행용 HTML을 생성하고, 변경사항을 분석하세요.
 
 입력값:
 1. 원본 HTML: 자동포스팅 원문
@@ -747,36 +827,40 @@ const prompt = `
 5. 문장은 블로그 독자가 이해하기 쉽게 간결하게 정리
 6. HTML 구조는 유지하되, 중복 문단과 과도한 표는 정리 (단, 실무 서식 샘플이나 양식 예시는 내용 수치만 교정할 뿐 레이아웃 구조 자체를 임의로 삭제하지 말 것)
 
-## 추가 안전 규칙 (Strict Safety Rules)
+## 추가 안전 규칙
 - 기준 근거 및 검토 메모가 비어 있거나 부족한 경우, 법령·기준 수치·시험빈도·허용오차·하자담보 기간을 새로 확정하지 않는다.
 - 근거가 없는 기존 수치는 삭제하거나 조건부 표현으로 완화한다.
 - 원본, 검토본, 기준 근거 어디에도 없는 새로운 사례, 수치, 법령명, 기준명, 공법명, 제품명을 임의로 추가하지 않는다.
-- 표 안의 수치와 본문 수치가 충돌하면 기준 근거에 있는 값으로 통일한다.
-- 근거가 불명확한 표의 수치는 "실무 참고", "예시", "제품별 상이"로 표시하거나 삭제한다.
 
 ## 수치·기준 처리 규칙
 - 기준 근거에 명확히 있는 수치 → 확정 기준으로 작성
 - 제조사 시방서에만 있는 수치 → "제조사 시방서에서 요구하는 경우가 많다" 또는 "제품별 기준 확인"으로 작성
 - 실무 관행 수치 → "실무 참고 범위"로 작성
 - 출처가 불명확한 수치 → 삭제하거나 조건부 표현으로 완화
-- 두 검토본의 수치가 충돌하면 기준 근거에 있는 수치만 채택
-- 기준 근거가 없으면 더 보수적으로 작성하고, 특정 수치를 단정하지 않음
-
-## 두 검토본 비교 규칙
-- 두 버전에서 동일하게 수정된 부분이라도 기준 근거와 맞는지 확인 후 채택
-- 한 버전에서만 수정된 부분은 기준 근거가 있거나 명백히 표현을 안전하게 만든 경우에만 채택
-- 원본이 더 정확하면 원본 표현을 유지
-- ChatGPT/Claude 수정본 모두 부정확하면 새로 안전한 문장으로 재작성
-- 불확실한 내용은 확정 표현 대신 원인, 조건, 기준 확인 방식 중심으로 작성
 
 ## HTML 출력 규칙
-- 최종 결과는 설명이나 마크다운 코드블록 펜스(\`\`\`html 또는 \`\`\`)를 전면 배제하고 오직 순수 HTML 코드만 출력
-- 출력되는 문서의 첫 라인은 무조건 HTML 태그(예: <h2> 또는 <p>)로 시작되어야 함
 - <h1>은 사용하지 말고 <h2>, <h3>, <p>, <ul>, <li>, <table> 중심으로 작성
 - 불필요한 id, class, style 속성은 제거
 - 외부 링크는 사용하지 않음
-- 참고기준 섹션은 문서 하단에 유지하되 실제 본문에서 사용하고 검증된 기준만 포함 (지어내기 금지)
 - 최종 HTML 안에 "ChatGPT", "Claude", "Gemini", "검토본"이라는 표현을 넣지 않음
+
+## 출력 형식 (반드시 아래 JSON만 출력, 마크다운 펜스 없이)
+{
+  "html": "최종 발행용 순수 HTML 코드",
+  "changes": [
+    {
+      "type": "modify|remove|add|safe",
+      "comment": "변경사항 제목 (한 줄)",
+      "detail": "원본에서 어떻게 바뀌었는지 구체적 설명"
+    }
+  ]
+}
+
+type 설명:
+- modify: 내용 수정 (수치 교정, 표현 완화, 용어 수정)
+- remove: 삭제 (금지표현, 근거없는 수치, 중복 문단)
+- add: 추가 (기준 출처, 조건부 표현)
+- safe: 안전 처리 (단정 표현 → 조건부로 완화)
 
 ## 원본 HTML
 ${originalHtml}
@@ -788,9 +872,9 @@ ${chatgptHtml}
 ${claudeHtml}
 
 ## 기준 근거 및 검토 메모
-${referenceNotes}
+${referenceNotes || '(없음)'}
 
-위 내용을 바탕으로 최종 발행용 HTML만 출력하세요.
+위 내용을 바탕으로 JSON만 출력하세요.
 `;
 
   try {
@@ -810,23 +894,60 @@ ${referenceNotes}
       throw new Error(err?.error?.message || `HTTP ${res.status}`);
     }
     const data = await res.json();
-    let html = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    html = html.replace(/^```html?\n?/,'').replace(/\n?```$/,'').trim();
+    let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    raw = raw.replace(/^```json?\n?/,'').replace(/^```\n?/,'').replace(/\n?```$/,'').trim();
+
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch(e) {
+      // JSON 파싱 실패 시 HTML만 있는 경우 fallback
+      parsed = { html: raw, changes: [] };
+    }
+
+    const html = (parsed.html || '').replace(/^```html?\n?/,'').replace(/\n?```$/,'').trim();
+    const changes = parsed.changes || [];
 
     p.html_final = html;
     p.has_final = !!html;
     const ok = await saveHtml(p);
 
+    // 최종본 표시
     document.getElementById('gemini-generate-area').innerHTML = `
       <textarea class="html-textarea final" id="html-final" oninput="updateCharCount('final')">${esc(html)}</textarea>
       <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
+        <button class="btn btn-ghost" style="font-size:11px;" onclick="showPreview('final')">👁 미리보기</button>
         <button class="btn btn-ghost" style="font-size:11px;" onclick="copyHtml('final')">📋 복사</button>
         <button class="btn btn-green" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
       </div>
     `;
     document.getElementById('cnt-final').textContent = html.length.toLocaleString()+'자';
+
+    // 변경사항 카드 렌더링
+    if (changes.length > 0) {
+      const typeLabel = { modify:'수정', remove:'삭제', add:'추가', safe:'안전처리' };
+      const typeClass = { modify:'modify', remove:'remove', add:'add', safe:'safe' };
+      document.getElementById('diff-section').innerHTML = `
+        <div class="card diff-card">
+          <div class="card-header" style="padding:10px 16px;">
+            <span style="font-size:13px;">🔍</span>
+            <div class="card-header-title">변경사항 분석 — 원본 대비 ${changes.length}건</div>
+          </div>
+          <div class="card-body" style="padding:12px 16px;">
+            ${changes.map(c => `
+              <div class="diff-item ${typeClass[c.type]||'modify'}">
+                <span class="diff-type ${typeClass[c.type]||'modify'}">${typeLabel[c.type]||c.type}</span>
+                <div class="diff-content">
+                  <div class="diff-comment">${esc(c.comment)}</div>
+                  ${c.detail ? `<div class="diff-detail">${esc(c.detail)}</div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     renderList();
-    showToast(`최종본 생성 완료 — ${ok?'☁ DB 저장됨':'⚠ DB 저장 실패'}`, ok?'success':'error');
+    showToast(`최종본 생성 완료 — ${changes.length}건 변경 — ${ok?'☁ DB 저장됨':'⚠ DB 저장 실패'}`, ok?'success':'error');
   } catch(e) {
     document.getElementById('gemini-generate-area').innerHTML = `
       <div style="padding:10px 12px;background:var(--red-light);border-radius:8px;font-size:12px;color:var(--red);margin-bottom:8px;">⚠ ${esc(e.message)}</div>
