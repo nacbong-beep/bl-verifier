@@ -118,11 +118,18 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .placeholder-text{font-size:13px;}
 
 /* CARDS */
-.detail-wrap{max-width:860px;display:flex;flex-direction:column;gap:14px;}
+.detail-wrap{max-width:100%;display:flex;flex-direction:column;gap:14px;}
 .card{background:white;border-radius:10px;border:1px solid var(--border);overflow:hidden;}
 .card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .card-header-title{font-size:12px;font-weight:600;color:var(--text);flex:1;}
 .card-body{padding:16px 20px;}
+
+/* 상단 2열 레이아웃 (기본정보 + 상태) */
+.top-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+/* HTML 슬롯 2열 그리드 */
+.html-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.html-grid-full{grid-column:1/-1;}
 
 .detail-category{font-size:10px;font-weight:600;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
 .detail-title{font-size:16px;font-weight:700;line-height:1.4;color:var(--navy);margin-bottom:8px;}
@@ -228,6 +235,8 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
   .post-list{max-height:35vh;}
   .main{padding:12px;}
   .detail-wrap{max-width:100%;gap:10px;}
+  .top-row{grid-template-columns:1fr;}
+  .html-grid{grid-template-columns:1fr;}
   .card-body{padding:12px 14px;}
   .card-header{padding:10px 14px;}
   .status-row{gap:6px;}
@@ -572,33 +581,38 @@ function selectPost(id) {
   document.getElementById('main').innerHTML=`
     <div class="detail-wrap">
 
-      <!-- 기본 정보 -->
-      <div class="card">
-        <div class="card-body">
-          ${p.category?`<div class="detail-category">${esc(p.category)}</div>`:''}
-          <div class="detail-title">${esc(p.title)}</div>
-          <div class="detail-meta">
-            <span>📅 ${p.date}</span><span>#${p.id}</span>
-            <a href="${esc(p.link)}" target="_blank">🔗 WordPress에서 보기</a>
+      <!-- 상단: 기본정보 + 상태 2열 -->
+      <div class="top-row">
+        <div class="card">
+          <div class="card-body">
+            ${p.category?`<div class="detail-category">${esc(p.category)}</div>`:''}
+            <div class="detail-title">${esc(p.title)}</div>
+            <div class="detail-meta">
+              <span>📅 ${p.date}</span><span>#${p.id}</span>
+              <a href="${esc(p.link)}" target="_blank">🔗 WordPress에서 보기</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-header-title">검증 상태</div></div>
+          <div class="card-body">
+            <div class="status-row">
+              <button class="sbtn pass ${p.status==='pass'?'sel':''}" onclick="setStatus('pass')">✅ 통과</button>
+              <button class="sbtn fix ${p.status==='fix'?'sel':''}" onclick="setStatus('fix')">⚠️ 수정필요</button>
+              <button class="sbtn delete ${p.status==='delete'?'sel':''}" onclick="setStatus('delete')">🗑 삭제</button>
+              <button class="sbtn unreviewed ${p.status==='unreviewed'?'sel':''}" onclick="setStatus('unreviewed')">— 미검토</button>
+            </div>
+            <textarea class="memo-textarea" id="memoField" placeholder="수정 필요 사항, 검토 메모..." style="margin-top:10px;min-height:60px;">${esc(p.memo)}</textarea>
+            <div class="memo-row">
+              <span class="memo-sync-status" id="memoSyncStatus"></span>
+              <button class="btn btn-navy" onclick="saveMemo()">☁ 저장</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 상태 -->
-      <div class="card">
-        <div class="card-header"><div class="card-header-title">검증 상태</div></div>
-        <div class="card-body">
-          <div class="status-row">
-            <span class="status-label">상태:</span>
-            <button class="sbtn pass ${p.status==='pass'?'sel':''}" onclick="setStatus('pass')">✅ 통과</button>
-            <button class="sbtn fix ${p.status==='fix'?'sel':''}" onclick="setStatus('fix')">⚠️ 수정필요</button>
-            <button class="sbtn delete ${p.status==='delete'?'sel':''}" onclick="setStatus('delete')">🗑 삭제</button>
-            <button class="sbtn unreviewed ${p.status==='unreviewed'?'sel':''}" onclick="setStatus('unreviewed')">— 미검토</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- HTML 작업 -->
+      <!-- HTML 버전 관리 카드 -->
       <div class="card">
         <div class="card-header">
           <span style="font-size:15px;">📝</span>
@@ -606,74 +620,64 @@ function selectPost(id) {
           <button class="btn btn-ghost" onclick="saveAllHtml()" style="font-size:11px;padding:5px 10px;">☁ 전체 저장</button>
         </div>
         <div class="card-body">
+          <div class="html-grid">
 
-          <!-- 원본 -->
-          <div class="html-slot">
-            <div class="html-slot-header">
-              <span class="html-slot-badge badge-orig">원본</span>
-              <span class="html-slot-label">자동포스팅 원본 HTML</span>
-              <span class="html-char-count" id="cnt-orig">${charCount(p.html_orig)}</span>
+            <!-- 원본 -->
+            <div class="html-slot">
+              <div class="html-slot-header">
+                <span class="html-slot-badge badge-orig">원본</span>
+                <span class="html-slot-label">자동포스팅 원본 HTML</span>
+                <span class="html-char-count" id="cnt-orig">${charCount(p.html_orig)}</span>
+              </div>
+              <textarea class="html-textarea" id="html-orig" placeholder="WordPress 자동포스팅 원본 HTML..." oninput="updateCharCount('orig')">${esc(p.html_orig)}</textarea>
             </div>
-            <textarea class="html-textarea" id="html-orig" placeholder="WordPress 자동포스팅 원본 HTML 코드를 붙여넣으세요..." oninput="updateCharCount('orig')">${esc(p.html_orig)}</textarea>
-          </div>
 
-          <!-- Gemini -->
-          <div class="html-slot">
-            <div class="html-slot-header">
-              <span class="html-slot-badge badge-gemini">Gemini</span>
-              <span class="html-slot-label">Gemini 수동검토 HTML</span>
-              <span class="html-char-count" id="cnt-gemini">${charCount(p.html_gemini)}</span>
+            <!-- Gemini -->
+            <div class="html-slot">
+              <div class="html-slot-header">
+                <span class="html-slot-badge badge-gemini">Gemini</span>
+                <span class="html-slot-label">Gemini 수동검토 HTML</span>
+                <span class="html-char-count" id="cnt-gemini">${charCount(p.html_gemini)}</span>
+              </div>
+              <textarea class="html-textarea" id="html-gemini" placeholder="Gemini 검토 후 수정한 HTML..." oninput="updateCharCount('gemini')">${esc(p.html_gemini)}</textarea>
             </div>
-            <textarea class="html-textarea" id="html-gemini" placeholder="Gemini로 검토 후 수정한 HTML 코드를 붙여넣으세요..." oninput="updateCharCount('gemini')">${esc(p.html_gemini)}</textarea>
-          </div>
 
-          <!-- ChatGPT -->
-          <div class="html-slot">
-            <div class="html-slot-header">
-              <span class="html-slot-badge badge-gpt">ChatGPT</span>
-              <span class="html-slot-label">ChatGPT 수동검토 HTML</span>
-              <span class="html-char-count" id="cnt-gpt">${charCount(p.html_gpt)}</span>
+            <!-- ChatGPT -->
+            <div class="html-slot">
+              <div class="html-slot-header">
+                <span class="html-slot-badge badge-gpt">ChatGPT</span>
+                <span class="html-slot-label">ChatGPT 수동검토 HTML</span>
+                <span class="html-char-count" id="cnt-gpt">${charCount(p.html_gpt)}</span>
+              </div>
+              <textarea class="html-textarea" id="html-gpt" placeholder="ChatGPT 검토 후 수정한 HTML..." oninput="updateCharCount('gpt')">${esc(p.html_gpt)}</textarea>
             </div>
-            <textarea class="html-textarea" id="html-gpt" placeholder="ChatGPT로 검토 후 수정한 HTML 코드를 붙여넣으세요..." oninput="updateCharCount('gpt')">${esc(p.html_gpt)}</textarea>
-          </div>
 
-          <!-- Claude 최종 -->
-          <div class="html-slot">
-            <div class="html-slot-header">
-              <span class="html-slot-badge badge-final">Claude 최종</span>
-              <span class="html-slot-label">Claude API 자동 생성 최종본</span>
-              <span class="html-char-count" id="cnt-final">${charCount(p.html_final)}</span>
+            <!-- Claude 최종 -->
+            <div class="html-slot">
+              <div class="html-slot-header">
+                <span class="html-slot-badge badge-final">Claude 최종</span>
+                <span class="html-slot-label">Claude API 자동 생성 최종본</span>
+                <span class="html-char-count" id="cnt-final">${charCount(p.html_final)}</span>
+              </div>
+              <div id="claude-generate-area">
+                ${p.html_final ? `
+                  <textarea class="html-textarea final" id="html-final" oninput="updateCharCount('final')">${esc(p.html_final)}</textarea>
+                  <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
+                    <button class="btn btn-ghost" style="font-size:11px;" onclick="copyHtml('final')">📋 복사</button>
+                    <button class="btn btn-purple" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
+                  </div>
+                ` : `
+                  <div class="claude-bar" style="border-radius:8px;">
+                    <span style="font-size:15px;">✨</span>
+                    <div class="claude-bar-text">원본·Gemini·ChatGPT HTML 입력 후<br><strong>아래 버튼</strong>을 누르세요.</div>
+                  </div>
+                  <div style="padding:10px 0 0;display:flex;justify-content:flex-end;">
+                    <button class="btn btn-purple btn-full" onclick="generateFinal()">✨ Claude 최종본 생성</button>
+                  </div>
+                `}
+              </div>
             </div>
-            <div id="claude-generate-area">
-              ${p.html_final ? `
-                <textarea class="html-textarea final" id="html-final" oninput="updateCharCount('final')">${esc(p.html_final)}</textarea>
-                <div style="display:flex;gap:8px;margin-top:6px;justify-content:flex-end;">
-                  <button class="btn btn-ghost" style="font-size:11px;" onclick="copyHtml('final')">📋 복사</button>
-                  <button class="btn btn-purple" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
-                </div>
-              ` : `
-                <div class="claude-bar">
-                  <span style="font-size:16px;">✨</span>
-                  <div class="claude-bar-text">원본·Gemini·ChatGPT HTML을 입력하고 <strong>Claude 최종본 생성</strong>을 누르세요.<br>세 버전을 비교 분석해서 최종 HTML을 자동 생성합니다.</div>
-                </div>
-                <div style="padding:14px 0 0;display:flex;justify-content:flex-end;">
-                  <button class="btn btn-purple" onclick="generateFinal()">✨ Claude 최종본 생성</button>
-                </div>
-              `}
-            </div>
-          </div>
 
-        </div>
-      </div>
-
-      <!-- 메모 -->
-      <div class="card">
-        <div class="card-header"><div class="card-header-title">📌 메모</div></div>
-        <div class="card-body">
-          <textarea class="memo-textarea" id="memoField" placeholder="수정 필요 사항, 검토 메모...">${esc(p.memo)}</textarea>
-          <div class="memo-row">
-            <span class="memo-sync-status" id="memoSyncStatus"></span>
-            <button class="btn btn-navy" onclick="saveMemo()">☁ 저장</button>
           </div>
         </div>
       </div>
