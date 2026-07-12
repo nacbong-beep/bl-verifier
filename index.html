@@ -126,10 +126,16 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 
 /* 상단 2열 레이아웃 (기본정보 + 상태) */
 .top-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.top-row .card-body{padding:12px 16px;}
+.top-row .detail-title{font-size:14px;margin-bottom:6px;}
+.top-row .detail-meta{font-size:10px;gap:10px;}
 
 /* HTML 슬롯 2열 그리드 */
 .html-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .html-grid-full{grid-column:1/-1;}
+.html-textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;color:var(--text);resize:vertical;min-height:calc(100vh - 420px);outline:none;transition:border-color 0.15s;line-height:1.5;background:var(--gray-light);}
+.html-textarea:focus{border-color:var(--navy);background:white;}
+.html-textarea.final{background:var(--purple-light);border-color:var(--purple);min-height:calc(100vh - 420px);}
 
 .detail-category{font-size:10px;font-weight:600;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
 .detail-title{font-size:16px;font-weight:700;line-height:1.4;color:var(--navy);margin-bottom:8px;}
@@ -159,9 +165,6 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .badge-gemini{background:#E8F6EF;color:var(--green);}
 .badge-gpt{background:#FEF5EC;color:var(--yellow);}
 .badge-final{background:var(--purple-light);color:var(--purple);}
-.html-textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;color:var(--text);resize:vertical;min-height:120px;outline:none;transition:border-color 0.15s;line-height:1.5;background:var(--gray-light);}
-.html-textarea:focus{border-color:var(--navy);background:white;}
-.html-textarea.final{background:var(--purple-light);border-color:var(--purple);min-height:160px;}
 .html-slot-footer{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
 .html-char-count{font-size:10px;color:var(--text-sub);}
 .html-slot-btns{display:flex;gap:6px;}
@@ -584,10 +587,10 @@ function selectPost(id) {
       <!-- 상단: 기본정보 + 상태 2열 -->
       <div class="top-row">
         <div class="card">
-          <div class="card-body">
+          <div class="card-body" style="padding:12px 16px;">
             ${p.category?`<div class="detail-category">${esc(p.category)}</div>`:''}
-            <div class="detail-title">${esc(p.title)}</div>
-            <div class="detail-meta">
+            <div class="detail-title" style="font-size:14px;margin-bottom:6px;">${esc(p.title)}</div>
+            <div class="detail-meta" style="font-size:10px;">
               <span>📅 ${p.date}</span><span>#${p.id}</span>
               <a href="${esc(p.link)}" target="_blank">🔗 WordPress에서 보기</a>
             </div>
@@ -595,15 +598,15 @@ function selectPost(id) {
         </div>
 
         <div class="card">
-          <div class="card-header"><div class="card-header-title">검증 상태</div></div>
-          <div class="card-body">
+          <div class="card-header" style="padding:10px 16px;"><div class="card-header-title">검증 상태</div></div>
+          <div class="card-body" style="padding:12px 16px;">
             <div class="status-row">
               <button class="sbtn pass ${p.status==='pass'?'sel':''}" onclick="setStatus('pass')">✅ 통과</button>
               <button class="sbtn fix ${p.status==='fix'?'sel':''}" onclick="setStatus('fix')">⚠️ 수정필요</button>
               <button class="sbtn delete ${p.status==='delete'?'sel':''}" onclick="setStatus('delete')">🗑 삭제</button>
               <button class="sbtn unreviewed ${p.status==='unreviewed'?'sel':''}" onclick="setStatus('unreviewed')">— 미검토</button>
             </div>
-            <textarea class="memo-textarea" id="memoField" placeholder="수정 필요 사항, 검토 메모..." style="margin-top:10px;min-height:60px;">${esc(p.memo)}</textarea>
+            <textarea class="memo-textarea" id="memoField" placeholder="수정 필요 사항, 검토 메모..." style="margin-top:8px;min-height:52px;">${esc(p.memo)}</textarea>
             <div class="memo-row">
               <span class="memo-sync-status" id="memoSyncStatus"></span>
               <button class="btn btn-navy" onclick="saveMemo()">☁ 저장</button>
