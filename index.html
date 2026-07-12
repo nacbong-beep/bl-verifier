@@ -18,7 +18,7 @@
   --navy-light:#E8ECF5; --green:#2E9E6B; --green-light:#E8F6EF;
   --red:#C0392B; --red-light:#FDECEB; --yellow:#E67E22; --yellow-light:#FEF5EC;
   --gray:#95A5A6; --gray-light:#F5F6FA; --border:#E0E4ED;
-  --text:#2C3E50; --text-sub:#7F8C8D; --purple:#7C3AED; --purple-light:#F3F0FF;
+  --text:#2C3E50; --text-sub:#7F8C8D;
   --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -61,8 +61,6 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .btn-ghost:hover:not(:disabled){background:var(--border);}
 .btn-green{background:var(--green);color:white;}
 .btn-green:hover:not(:disabled){opacity:0.88;}
-.btn-purple{background:var(--purple);color:white;}
-.btn-purple:hover:not(:disabled){opacity:0.88;}
 .btn-full{width:100%;}
 
 .filter-tabs{display:flex;gap:4px;flex-wrap:wrap;}
@@ -135,7 +133,7 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .html-grid-full{grid-column:1/-1;}
 .html-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;color:var(--text);resize:none;height:calc((100vh - 320px) / 2);outline:none;transition:border-color 0.15s;line-height:1.5;background:var(--gray-light);}
 .html-textarea:focus{border-color:var(--navy);background:white;}
-.html-textarea.final{background:var(--purple-light);border-color:var(--purple);height:calc((100vh - 320px) / 2);}
+.html-textarea.final{background:var(--navy-light);border-color:var(--navy);height:calc((100vh - 320px) / 2);}
 
 .detail-category{font-size:10px;font-weight:600;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
 .detail-title{font-size:16px;font-weight:700;line-height:1.4;color:var(--navy);margin-bottom:8px;}
@@ -162,30 +160,23 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .html-slot-label{font-size:11px;font-weight:700;color:var(--text);flex:1;}
 .html-slot-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
 .badge-orig{background:#E8ECF5;color:var(--navy);}
-.badge-gemini{background:#E8F6EF;color:var(--green);}
 .badge-gpt{background:#FEF5EC;color:var(--yellow);}
-.badge-final{background:var(--purple-light);color:var(--purple);}
+.badge-claude{background:#E8ECF5;color:#5B4FCF;}
+.badge-final{background:var(--green-light);color:var(--green);}
 .html-slot-footer{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
 .html-char-count{font-size:10px;color:var(--text-sub);}
 .html-slot-btns{display:flex;gap:6px;}
 
-/* Claude 생성 영역 */
-.claude-bar{padding:14px 20px;background:var(--purple-light);border-bottom:1px solid rgba(124,58,237,0.2);display:flex;align-items:center;gap:10px;}
-.claude-bar-text{font-size:12px;color:var(--purple);flex:1;line-height:1.5;}
-.claude-generating{display:flex;align-items:center;gap:8px;padding:16px 20px;color:var(--purple);font-size:12px;}
+/* 스피너 */
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-state{text-align:center;padding:36px;color:var(--text-sub);font-size:12px;}
+.loading-state .spinner{margin:0 auto 12px;}
 
 /* 메모 */
 .memo-textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);color:var(--text);resize:vertical;min-height:80px;outline:none;transition:border-color 0.15s;line-height:1.6;}
 .memo-textarea:focus{border-color:var(--navy);}
-.memo-row{display:flex;justify-content:flex-end;margin-top:8px;gap:8px;align-items:center;}
 .memo-sync-status{font-size:10px;color:var(--text-sub);}
-
-/* 스피너 */
-.spinner{width:16px;height:16px;border:2px solid rgba(124,58,237,0.2);border-top-color:var(--purple);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;}
-.spinner-navy{border-color:var(--border);border-top-color:var(--navy);}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-state{text-align:center;padding:36px;color:var(--text-sub);font-size:12px;}
-.loading-state .spinner{margin:0 auto 12px;border-color:var(--border);border-top-color:var(--navy);}
 
 /* 모달 */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
@@ -201,31 +192,6 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .toast.show{opacity:1;transform:translateY(0);}
 .toast.success{background:var(--green);}
 .toast.error{background:var(--red);}
-
-/* Claude API 키 설정 */
-.api-section{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--purple-light);}
-.api-key-row{display:flex;gap:6px;align-items:center;}
-.api-key-status{font-size:10px;color:var(--text-sub);}
-.api-key-status.ok{color:var(--purple);font-weight:600;}
-
-/* 글감 아이디어 카드 */
-.idea-section-label{font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.idea-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
-.badge-light-idea{background:#E8F4FD;color:#1A6FA8;}
-.badge-insight-idea{background:var(--navy-light);color:var(--navy);}
-.idea-summary-wrap{display:flex;flex-direction:column;gap:6px;}
-.idea-summary-item{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;background:var(--gray-light);border-radius:7px;font-size:12px;line-height:1.6;}
-.idea-num{font-size:10px;font-weight:700;color:var(--orange);background:var(--orange-light);padding:2px 6px;border-radius:10px;flex-shrink:0;margin-top:1px;}
-.idea-title-card{position:relative;padding:10px 70px 10px 12px;border-radius:8px;margin-bottom:6px;border:1px solid transparent;}
-.light-card{background:#E8F4FD;border-color:#B3D9F5;}
-.insight-card{background:var(--navy-light);border-color:#B8C8E8;}
-.idea-title-text{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.4;}
-.idea-angle{font-size:11px;color:var(--text-sub);line-height:1.4;}
-.idea-copy-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:4px 8px;font-size:10px;font-weight:600;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;color:var(--text);transition:background 0.15s;}
-.idea-copy-btn:hover{background:var(--gray-light);}
-.idea-keywords{display:flex;flex-wrap:wrap;gap:6px;}
-.idea-keyword{padding:4px 10px;background:var(--navy-light);color:var(--navy);border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:background 0.15s;}
-.idea-keyword:hover{background:#C8D8F0;}
 
 /* 모바일 */
 @media(max-width:640px){
@@ -282,14 +248,14 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
       <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
     </div>
 
-    <!-- Claude API 키 -->
-    <div class="api-section">
-      <div class="section-label" style="color:var(--purple);">Claude API</div>
-      <div class="api-key-row">
-        <input class="ifield" id="claudeKey" type="password" placeholder="sk-ant-...">
-        <button class="btn" style="background:var(--purple);color:white;" onclick="saveClaudeKey()">저장</button>
+    <!-- Gemini API -->
+    <div class="sidebar-section" style="background:#E8F6EF;">
+      <div class="section-label" style="color:var(--green);">Gemini API</div>
+      <div style="display:flex;gap:6px;">
+        <input class="ifield" id="geminiKey" type="password" placeholder="AIza...">
+        <button class="btn btn-green" onclick="saveGeminiKey()">저장</button>
       </div>
-      <div style="margin-top:5px;"><span class="api-key-status" id="claudeKeyStatus">키 미입력</span></div>
+      <div style="margin-top:5px;font-size:10px;" id="geminiKeyStatus">키 미입력</div>
     </div>
 
     <!-- 필터 -->
@@ -446,53 +412,7 @@ function setSyncStatus(ok, msg='') {
 
 // ── 상태 ──────────────────────────────────────────────
 let posts=[], currentId=null, currentFilter='all', dbData={};
-let wpTotal = 0; // WordPress 전체 포스트 수 캐시
-
-// ── Claude API 키 ──────────────────────────────────────
-function saveClaudeKey() {
-  const key = document.getElementById('claudeKey').value.trim();
-  if (!key) { showToast('키를 입력하세요','error'); return; }
-  localStorage.setItem('bl_claude_key', key);
-  document.getElementById('claudeKeyStatus').textContent = '✓ 저장됨';
-  document.getElementById('claudeKeyStatus').className = 'api-key-status ok';
-  showToast('Claude API 키 저장됨','success');
-}
-
-function loadClaudeKey() {
-  const key = localStorage.getItem('bl_claude_key');
-  if (key) {
-    document.getElementById('claudeKey').value = key;
-    document.getElementById('claudeKeyStatus').textContent = '✓ 저장됨';
-    document.getElementById('claudeKeyStatus').className = 'api-key-status ok';
-  }
-}
-
-function getClaudeKey() { return document.getElementById('claudeKey').value.trim(); }
-
-// ── Claude API 호출 ────────────────────────────────────
-async function callClaude(prompt) {
-  const key = getClaudeKey();
-  if (!key) throw new Error('Claude API 키가 없습니다');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':key,
-      'anthropic-version':'2023-06-01'
-    },
-    body:JSON.stringify({
-      model:'claude-sonnet-4-6',
-      max_tokens:4000,
-      messages:[{role:'user', content:prompt}]
-    })
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err?.error?.message||`HTTP ${res.status}`);
-  }
-  const data = await res.json();
-  return data.content?.[0]?.text||'';
-}
+let wpTotal = 0;
 
 // ── WordPress 로드 (자동/수동 공용) ──────────────────
 async function loadWpPosts() {
@@ -585,7 +505,7 @@ function renderList() {
 
   const htmlProgress = p => {
     let filled = (p.has_orig?1:0)+(p.has_gemini?1:0)+(p.has_gpt?1:0)+(p.has_final?1:0);
-    return filled > 0 ? `<span style="color:var(--purple);font-size:9px;">HTML ${filled}/4</span>` : '';
+    return filled > 0 ? `<span style="color:var(--navy);font-size:9px;">HTML ${filled}/4</span>` : '';
   };
 
   document.getElementById('postList').innerHTML=filtered.map(p=>`
@@ -690,48 +610,45 @@ async function selectPost(id) {
               <textarea class="html-textarea" id="html-orig" placeholder="WordPress 자동포스팅 원본 HTML..." oninput="updateCharCount('orig')">${esc(p.html_orig)}</textarea>
             </div>
 
-            <!-- Gemini -->
-            <div class="html-slot">
-              <div class="html-slot-header">
-                <span class="html-slot-badge badge-gemini">Gemini</span>
-                <span class="html-slot-label">Gemini 수동검토 HTML</span>
-                <span class="html-char-count" id="cnt-gemini">${charCount(p.html_gemini)}</span>
-              </div>
-              <textarea class="html-textarea" id="html-gemini" placeholder="Gemini 검토 후 수정한 HTML..." oninput="updateCharCount('gemini')">${esc(p.html_gemini)}</textarea>
-            </div>
-
             <!-- ChatGPT -->
             <div class="html-slot">
               <div class="html-slot-header">
                 <span class="html-slot-badge badge-gpt">ChatGPT</span>
                 <span class="html-slot-label">ChatGPT 수동검토 HTML</span>
-                <span class="html-char-count" id="cnt-gpt">${charCount(p.html_gpt)}</span>
+                <span class="html-char-count" id="cnt-gemini">${charCount(p.html_gemini)}</span>
               </div>
-              <textarea class="html-textarea" id="html-gpt" placeholder="ChatGPT 검토 후 수정한 HTML..." oninput="updateCharCount('gpt')">${esc(p.html_gpt)}</textarea>
+              <textarea class="html-textarea" id="html-gemini" placeholder="ChatGPT로 검토 후 수정한 HTML..." oninput="updateCharCount('gemini')">${esc(p.html_gemini)}</textarea>
             </div>
 
-            <!-- Claude 최종 -->
+            <!-- Claude -->
             <div class="html-slot">
               <div class="html-slot-header">
-                <span class="html-slot-badge badge-final">Claude 최종</span>
-                <span class="html-slot-label">Claude API 자동 생성 최종본</span>
+                <span class="html-slot-badge badge-claude">Claude</span>
+                <span class="html-slot-label">Claude 수동검토 HTML</span>
+                <span class="html-char-count" id="cnt-gpt">${charCount(p.html_gpt)}</span>
+              </div>
+              <textarea class="html-textarea" id="html-gpt" placeholder="Claude로 검토 후 수정한 HTML..." oninput="updateCharCount('gpt')">${esc(p.html_gpt)}</textarea>
+            </div>
+
+            <!-- Gemini 최종 -->
+            <div class="html-slot">
+              <div class="html-slot-header">
+                <span class="html-slot-badge badge-final">Gemini 최종</span>
+                <span class="html-slot-label">Gemini API 자동 생성 최종본</span>
                 <span class="html-char-count" id="cnt-final">${charCount(p.html_final)}</span>
               </div>
-              <div id="claude-generate-area">
+              <div id="gemini-generate-area">
                 ${p.html_final ? `
                   <textarea class="html-textarea final" id="html-final" oninput="updateCharCount('final')">${esc(p.html_final)}</textarea>
                   <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
                     <button class="btn btn-ghost" style="font-size:11px;" onclick="copyHtml('final')">📋 복사</button>
-                    <button class="btn btn-purple" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
+                    <button class="btn btn-green" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
                   </div>
                 ` : `
-                  <div class="claude-bar" style="border-radius:8px;">
-                    <span style="font-size:15px;">✨</span>
-                    <div class="claude-bar-text">원본·Gemini·ChatGPT HTML 입력 후<br><strong>아래 버튼</strong>을 누르세요.</div>
+                  <div style="padding:10px 12px;background:var(--green-light);border-radius:8px;font-size:12px;color:var(--green);line-height:1.6;margin-bottom:8px;">
+                    ChatGPT·Claude HTML 입력 후 아래 버튼을 누르세요.<br>Gemini가 두 버전을 비교 분석해서 최종 HTML을 생성합니다.
                   </div>
-                  <div style="padding:10px 0 0;display:flex;justify-content:flex-end;">
-                    <button class="btn btn-purple btn-full" onclick="generateFinal()">✨ Claude 최종본 생성</button>
-                  </div>
+                  <button class="btn btn-green btn-full" onclick="generateFinal()">✨ Gemini 최종본 생성</button>
                 `}
               </div>
             </div>
@@ -760,177 +677,110 @@ function copyHtml(type) {
   });
 }
 
-// ── Claude 최종본 + 글감 동시 생성 ──────────────────
+// ── Gemini API 키 ──────────────────────────────────────
+function saveGeminiKey() {
+  const key = document.getElementById('geminiKey').value.trim();
+  if (!key) { showToast('키를 입력하세요','error'); return; }
+  localStorage.setItem('bl_gemini_key', key);
+  document.getElementById('geminiKeyStatus').textContent = '✓ 저장됨';
+  document.getElementById('geminiKeyStatus').style.color = 'var(--green)';
+  showToast('Gemini API 키 저장됨','success');
+}
+
+function loadGeminiKey() {
+  const key = localStorage.getItem('bl_gemini_key');
+  if (key) {
+    document.getElementById('geminiKey').value = key;
+    document.getElementById('geminiKeyStatus').textContent = '✓ 저장됨';
+    document.getElementById('geminiKeyStatus').style.color = 'var(--green)';
+  }
+}
+
+function getGeminiKey() { return document.getElementById('geminiKey').value.trim(); }
+
+// ── Gemini 최종본 생성 ────────────────────────────────
 async function generateFinal() {
   const p = posts.find(x=>x.id===currentId);
   if (!p) return;
 
+  const gpt = document.getElementById('html-gemini')?.value?.trim() || ''; // ChatGPT
+  const claude = document.getElementById('html-gpt')?.value?.trim() || '';  // Claude
   const orig = document.getElementById('html-orig')?.value?.trim() || '';
-  const gemini = document.getElementById('html-gemini')?.value?.trim() || '';
-  const gpt = document.getElementById('html-gpt')?.value?.trim() || '';
 
-  if (!gemini && !gpt) { showToast('Gemini 또는 ChatGPT HTML을 먼저 입력하세요','error'); return; }
-  if (!getClaudeKey()) { showToast('Claude API 키를 먼저 입력하세요','error'); return; }
+  if (!gpt && !claude) { showToast('ChatGPT 또는 Claude HTML을 먼저 입력하세요','error'); return; }
 
-  // 생성 중 UI
-  document.getElementById('claude-generate-area').innerHTML=`
-    <div class="claude-generating">
-      <div class="spinner"></div>
-      Claude가 최종본 생성 + 글감 아이디어 추출 중입니다...
+  const key = getGeminiKey();
+  if (!key) { showToast('Gemini API 키를 먼저 입력하세요','error'); return; }
+
+  document.getElementById('gemini-generate-area').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;padding:12px;background:var(--green-light);border-radius:8px;font-size:12px;color:var(--green);">
+      <div class="spinner" style="border-top-color:var(--green);"></div>
+      Gemini가 두 버전을 비교 분석 중입니다...
     </div>
   `;
 
   const prompt = `당신은 건설 기술 콘텐츠 편집 전문가입니다.
-아래 HTML 버전들을 비교 분석해서 최고 품질의 최종 HTML을 생성하고, 블로그 글감 아이디어도 함께 추출해주세요.
+아래 HTML 버전들을 비교 분석해서 최고 품질의 최종 HTML을 생성해주세요.
 
-## HTML 판단 기준
+## 판단 기준
 - KCS/KDS/KS 기준 수치가 정확히 명시된 버전 우선
 - 금지표현("~년간의 경험", "전문가로서" 등) 완전 제거
 - 건설 현장 용어 정확성 (PHC파일 항타, 사춤 등)
 - 참고기준 섹션 포함 여부
 - 문장 가독성과 구조
 
-## 출력 형식 (반드시 아래 JSON 형식으로만 출력, 다른 텍스트 없이)
-{
-  "html": "최종 HTML 코드 전체",
-  "summary": ["핵심 요약 1줄", "핵심 요약 2줄", "핵심 요약 3줄"],
-  "light": [
-    {"title": "네이버 블로그 제목 후보 1", "angle": "접근 각도 한 줄"},
-    {"title": "네이버 블로그 제목 후보 2", "angle": "접근 각도 한 줄"},
-    {"title": "네이버 블로그 제목 후보 3", "angle": "접근 각도 한 줄"}
-  ],
-  "insight": [
-    {"title": "티스토리 제목 후보 1", "angle": "접근 각도 한 줄"},
-    {"title": "티스토리 제목 후보 2", "angle": "접근 각도 한 줄"},
-    {"title": "티스토리 제목 후보 3", "angle": "접근 각도 한 줄"}
-  ],
-  "keywords": ["키워드1", "키워드2", "키워드3", "키워드4", "키워드5"]
-}
+## 처리 방식
+- 두 버전에서 동일하게 수정된 부분 → 확실한 오류, 수정본 채택
+- 한 버전에서만 수정된 부분 → 더 정확한 쪽 선택
+- HTML 코드만 출력 (설명 없이 순수 HTML만)
 
-## LIGHT 제목 기준 (네이버 블로그)
-- 현장 경험 1~3년차 실무자 눈높이
-- 쉽고 친근한 톤, 질문형 또는 "~하는 방법" 형태
-- 1,000~1,500자 분량 글에 맞는 가벼운 주제
+${orig ? `## 원본\n${orig}\n\n` : ''}## ChatGPT 검토 버전
+${gpt || '(미입력)'}
 
-## INSIGHT 제목 기준 (티스토리)
-- 건설 실무자·감리자 대상 심화 내용
-- KCS/KDS 기준 수치 포함 예고, 선언형 레퍼런스 패턴
-- 2,500~4,000자 분량 글에 맞는 깊이 있는 주제
-
----
-${orig ? `## 원본 HTML\n${orig}\n\n` : ''}## Gemini 검토 HTML
-${gemini || '(미입력)'}
-
-## ChatGPT 검토 HTML
-${gpt || '(미입력)'}`;
+## Claude 검토 버전
+${claude || '(미입력)'}`;
 
   try {
-    const result = await callClaude(prompt);
-    // JSON 파싱
-    const match = result.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('JSON 파싱 실패 — Claude 응답 형식 오류');
-    const parsed = JSON.parse(match[0]);
-
-    const html = parsed.html || '';
-    const summary = parsed.summary || [];
-    const light = parsed.light || [];
-    const insight = parsed.insight || [];
-    const keywords = parsed.keywords || [];
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
+        })
+      }
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    let html = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    html = html.replace(/^```html?\n?/,'').replace(/\n?```$/,'').trim();
 
     p.html_final = html;
-    p.ideas = { summary, light, insight, keywords };
+    p.has_final = !!html;
     const ok = await saveHtml(p);
 
-    // 최종 HTML 표시
-    document.getElementById('claude-generate-area').innerHTML=`
+    document.getElementById('gemini-generate-area').innerHTML = `
       <textarea class="html-textarea final" id="html-final" oninput="updateCharCount('final')">${esc(html)}</textarea>
-      <div style="display:flex;gap:8px;margin-top:6px;justify-content:flex-end;">
+      <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
         <button class="btn btn-ghost" style="font-size:11px;" onclick="copyHtml('final')">📋 복사</button>
-        <button class="btn btn-purple" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
+        <button class="btn btn-green" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
       </div>
     `;
     document.getElementById('cnt-final').textContent = html.length.toLocaleString()+'자';
-
-    // 글감 아이디어 카드 표시
-    renderIdeas({ summary, light, insight, keywords });
-
-    showToast(`최종본 + 글감 아이디어 생성 완료 — ${ok?'☁ DB 저장됨':'⚠ DB 저장 실패'}`, ok?'success':'error');
+    renderList();
+    showToast(`최종본 생성 완료 — ${ok?'☁ DB 저장됨':'⚠ DB 저장 실패'}`, ok?'success':'error');
   } catch(e) {
-    document.getElementById('claude-generate-area').innerHTML=`
-      <div class="claude-bar">
-        <span style="font-size:16px;">⚠️</span>
-        <div class="claude-bar-text" style="color:var(--red);">오류: ${esc(e.message)}<br>
-        <button class="btn btn-purple" onclick="generateFinal()" style="margin-top:8px;font-size:11px;">다시 시도</button></div>
-      </div>
+    document.getElementById('gemini-generate-area').innerHTML = `
+      <div style="padding:10px 12px;background:var(--red-light);border-radius:8px;font-size:12px;color:var(--red);margin-bottom:8px;">⚠ ${esc(e.message)}</div>
+      <button class="btn btn-green btn-full" onclick="generateFinal()">🔄 다시 시도</button>
     `;
     showToast('생성 실패: '+e.message,'error');
   }
-}
-
-// ── 글감 아이디어 렌더링 ──────────────────────────────
-function renderIdeas({ summary, light, insight, keywords }) {
-  // 기존 아이디어 카드 제거 후 재삽입
-  const existing = document.getElementById('ideas-card');
-  if (existing) existing.remove();
-
-  const ideaHtml = `
-    <div class="card" id="ideas-card">
-      <div class="card-header">
-        <span style="font-size:15px;">💡</span>
-        <div class="card-header-title">블로그 글감 아이디어</div>
-      </div>
-      <div class="card-body">
-
-        <!-- 핵심 요약 -->
-        <div style="margin-bottom:18px;">
-          <div class="idea-section-label">📌 핵심 요약</div>
-          <div class="idea-summary-wrap">
-            ${summary.map((s,i)=>`
-              <div class="idea-summary-item">
-                <span class="idea-num">${i+1}</span>
-                <span>${esc(s)}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- LIGHT -->
-        <div style="margin-bottom:18px;">
-          <div class="idea-section-label"><span class="idea-badge badge-light-idea">LIGHT</span> 네이버 블로그 제목 후보</div>
-          ${light.map(item=>`
-            <div class="idea-title-card light-card">
-              <div class="idea-title-text">${esc(item.title)}</div>
-              <div class="idea-angle">${esc(item.angle)}</div>
-              <button class="idea-copy-btn" onclick="copyText('${esc(item.title)}')">복사</button>
-            </div>
-          `).join('')}
-        </div>
-
-        <!-- INSIGHT -->
-        <div style="margin-bottom:18px;">
-          <div class="idea-section-label"><span class="idea-badge badge-insight-idea">INSIGHT</span> 티스토리 제목 후보</div>
-          ${insight.map(item=>`
-            <div class="idea-title-card insight-card">
-              <div class="idea-title-text">${esc(item.title)}</div>
-              <div class="idea-angle">${esc(item.angle)}</div>
-              <button class="idea-copy-btn" onclick="copyText('${esc(item.title)}')">복사</button>
-            </div>
-          `).join('')}
-        </div>
-
-        <!-- 키워드 -->
-        <div>
-          <div class="idea-section-label">🔑 연관 키워드</div>
-          <div class="idea-keywords">
-            ${keywords.map(k=>`<span class="idea-keyword">${esc(k)}</span>`).join('')}
-          </div>
-        </div>
-
-      </div>
-    </div>
-  `;
-
-  document.querySelector('.detail-wrap').insertAdjacentHTML('beforeend', ideaHtml);
 }
 
 // ── HTML 전체 저장 ────────────────────────────────────
@@ -1016,16 +866,10 @@ if('serviceWorker' in navigator && location.protocol !== 'file:'){
 
 // ── 초기화 — 접속 시 자동 실행 ──────────────────────
 window.addEventListener('load', async () => {
-  loadClaudeKey();
-
-  // DB 메타 + WordPress 동시 로드
-  document.getElementById('postList').innerHTML = '<div class="loading-state"><div class="spinner spinner-navy"></div>불러오는 중...</div>';
+  loadGeminiKey();
+  document.getElementById('postList').innerHTML = '<div class="loading-state"><div class="spinner"></div>불러오는 중...</div>';
   document.getElementById('syncIndicator').textContent = '연결 중...';
-
-  await Promise.all([
-    loadDbMeta(),
-    loadWpPosts()
-  ]);
+  await Promise.all([loadDbMeta(), loadWpPosts()]);
 });
 </script>
 </body>
