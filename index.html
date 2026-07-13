@@ -846,11 +846,13 @@ async function saveMemo() {
   showToast(ok?'메모 저장됨':'저장 실패', ok?'success':'error');
 }
 
-// ── HTML 붙여넣기 (클립보드 → 입력창) ────────────────
+// ── HTML 붙여넣기 (클립보드 → 입력창, 코드블록 자동 제거) ──
 async function pasteHtml(type) {
   try {
-    const text = await navigator.clipboard.readText();
+    let text = await navigator.clipboard.readText();
     if (!text.trim()) { showToast('클립보드가 비어있습니다','error'); return; }
+    // 코드블록 제거 (```html ... ``` 또는 ``` ... ```)
+    text = text.replace(/^```html?\n?/i,'').replace(/\n?```$/,'').trim();
     const ta = document.getElementById('html-'+type);
     if (!ta) return;
     ta.value = text;
@@ -861,11 +863,12 @@ async function pasteHtml(type) {
   }
 }
 
-// ── HTML 복사 ─────────────────────────────────────────
+// ── HTML 복사 (코드블록으로 감싸서 Claude에서 렌더링 방지) ──
 function copyHtml(type) {
   const ta=document.getElementById('html-'+type);
   if (!ta||!ta.value) { showToast('복사할 내용이 없습니다','error'); return; }
-  navigator.clipboard.writeText(ta.value).then(()=>showToast('클립보드에 복사됨','success')).catch(()=>{
+  const wrapped = '```html\n' + ta.value + '\n```';
+  navigator.clipboard.writeText(wrapped).then(()=>showToast('클립보드에 복사됨 (Claude용)','success')).catch(()=>{
     ta.select(); document.execCommand('copy'); showToast('복사됨','success');
   });
 }
