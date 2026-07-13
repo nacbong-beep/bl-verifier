@@ -24,7 +24,6 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100vh;}
 
-/* HEADER */
 .header{background:var(--navy);color:white;padding:0 20px;height:52px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(27,47,94,0.3);}
 .header-logo{font-size:14px;font-weight:700;}
 .header-logo span{color:var(--orange);}
@@ -37,10 +36,8 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .sync-indicator.ok{background:rgba(46,158,107,0.4);}
 .sync-indicator.err{background:rgba(192,57,43,0.4);}
 
-/* LAYOUT */
 .layout{display:flex;height:calc(100vh - 52px);}
 
-/* SIDEBAR */
 .sidebar{width:290px;min-width:290px;background:white;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .sidebar-section{padding:14px 16px;border-bottom:1px solid var(--border);}
 .section-label{font-size:10px;font-weight:600;color:var(--text-sub);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
@@ -106,7 +103,6 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:6px;}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--orange));border-radius:2px;transition:width 0.4s;}
 
-/* MAIN */
 .main{flex:1;overflow-y:auto;padding:20px;}
 .main::-webkit-scrollbar{width:4px;}
 .main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
@@ -115,68 +111,61 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .placeholder-icon{font-size:36px;opacity:0.25;}
 .placeholder-text{font-size:13px;}
 
-/* CARDS */
 .detail-wrap{max-width:100%;display:flex;flex-direction:column;gap:14px;}
 .card{background:white;border-radius:10px;border:1px solid var(--border);overflow:hidden;}
-.card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .card-header-title{font-size:12px;font-weight:600;color:var(--text);flex:1;}
-.card-body{padding:16px 20px;}
+.card-body{padding:14px 16px;}
 
-/* 상단 2열 레이아웃 (기본정보 + 상태) */
 .top-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.top-row .card-body{padding:12px 16px;}
-.top-row .detail-title{font-size:14px;margin-bottom:6px;}
-.top-row .detail-meta{font-size:10px;gap:10px;}
 
-/* HTML 슬롯 2열 그리드 */
-.html-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.html-grid-full{grid-column:1/-1;}
-.html-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;color:var(--text);resize:none;height:calc((100vh - 320px) / 2);outline:none;transition:border-color 0.15s;line-height:1.5;background:var(--gray-light);}
+/* HTML 슬롯 3열 (원본/ChatGPT/Claude) + 하단 Gemini 최종 전체폭 */
+.html-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.html-slot-header{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.html-slot-label{font-size:11px;font-weight:600;color:var(--text);flex:1;}
+.html-slot-badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;}
+.badge-orig{background:#E8ECF5;color:var(--navy);}
+.badge-gpt{background:#FEF5EC;color:var(--yellow);}
+.badge-claude{background:#EDE9FE;color:#5B4FCF;}
+.badge-final{background:var(--green-light);color:var(--green);}
+.html-char-count{font-size:10px;color:var(--text-sub);}
+
+.html-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;color:var(--text);resize:none;height:calc((100vh - 420px) / 2);outline:none;transition:border-color 0.15s;line-height:1.5;background:var(--gray-light);}
 .html-textarea:focus{border-color:var(--navy);background:white;}
-.html-textarea.final{background:var(--navy-light);border-color:var(--navy);height:calc((100vh - 320px) / 2);}
+.html-textarea.final{background:var(--navy-light);border-color:var(--navy);height:calc((100vh - 420px) / 2);}
 
-.detail-category{font-size:10px;font-weight:600;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
-.detail-title{font-size:16px;font-weight:700;line-height:1.4;color:var(--navy);margin-bottom:8px;}
-.detail-meta{font-size:11px;color:var(--text-sub);display:flex;gap:14px;flex-wrap:wrap;}
+/* 프롬프트 복사 버튼 영역 */
+.prompt-bar{background:var(--orange-light);border:1px solid var(--orange);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.prompt-bar-text{font-size:12px;color:var(--orange);flex:1;line-height:1.5;}
+.prompt-bar-text strong{color:#B8410D;}
+
+.detail-category{font-size:10px;font-weight:600;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.detail-title{font-size:13px;font-weight:700;line-height:1.3;color:var(--navy);margin-bottom:4px;}
+.detail-meta{font-size:10px;color:var(--text-sub);display:flex;gap:10px;flex-wrap:wrap;}
 .detail-meta a{color:var(--navy);text-decoration:none;font-weight:500;}
-.detail-meta a:hover{text-decoration:underline;}
 
-/* STATUS */
-.status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.status-label{font-size:12px;font-weight:600;color:var(--text);margin-right:4px;}
-.sbtn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
+.sbtn{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:500;font-family:var(--font);cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
 .sbtn.pass{background:var(--green-light);color:var(--green);border-color:var(--green-light);}
 .sbtn.fix{background:var(--yellow-light);color:var(--yellow);border-color:var(--yellow-light);}
 .sbtn.delete{background:var(--red-light);color:var(--red);border-color:var(--red-light);}
 .sbtn.unreviewed{background:var(--gray-light);color:var(--gray);border-color:var(--border);}
-.sbtn.pass.sel{border-color:var(--green);box-shadow:0 0 0 2px rgba(46,158,107,0.15);}
-.sbtn.fix.sel{border-color:var(--yellow);box-shadow:0 0 0 2px rgba(230,126,34,0.15);}
-.sbtn.delete.sel{border-color:var(--red);box-shadow:0 0 0 2px rgba(192,57,43,0.15);}
+.sbtn.pass.sel{border-color:var(--green);}
+.sbtn.fix.sel{border-color:var(--yellow);}
+.sbtn.delete.sel{border-color:var(--red);}
 .sbtn.unreviewed.sel{border-color:var(--gray);}
 
-/* HTML 입력창 */
-.html-slot{margin-bottom:12px;}
-.html-slot-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-.html-slot-label{font-size:11px;font-weight:700;color:var(--text);flex:1;}
-.html-slot-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
-.badge-orig{background:#E8ECF5;color:var(--navy);}
-.badge-gpt{background:#FEF5EC;color:var(--yellow);}
-.badge-claude{background:#E8ECF5;color:#5B4FCF;}
-.badge-final{background:var(--green-light);color:var(--green);}
-.html-slot-footer{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
-.html-char-count{font-size:10px;color:var(--text-sub);}
-.html-slot-btns{display:flex;gap:6px;}
-
-/* 스피너 */
-.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-state{text-align:center;padding:36px;color:var(--text-sub);font-size:12px;}
-.loading-state .spinner{margin:0 auto 12px;}
-
-/* 메모 */
-.memo-textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:var(--font);color:var(--text);resize:vertical;min-height:80px;outline:none;transition:border-color 0.15s;line-height:1.6;}
+.memo-textarea{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:var(--font);color:var(--text);resize:none;min-height:36px;height:36px;outline:none;line-height:1.5;}
 .memo-textarea:focus{border-color:var(--navy);}
 .memo-sync-status{font-size:10px;color:var(--text-sub);}
+
+/* 미리보기 모달 */
+.preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.preview-overlay.show{opacity:1;pointer-events:all;}
+.preview-modal{background:white;border-radius:12px;width:90vw;max-width:860px;height:85vh;display:flex;flex-direction:column;transform:scale(0.95);transition:transform 0.2s;overflow:hidden;}
+.preview-overlay.show .preview-modal{transform:scale(1);}
+.preview-modal-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.preview-modal-title{font-size:13px;font-weight:600;color:var(--navy);flex:1;}
+.preview-frame{flex:1;border:none;width:100%;background:white;}
 
 /* 모달 */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
@@ -187,13 +176,16 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
 .export-ta{width:100%;height:180px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;color:var(--text);resize:none;outline:none;background:var(--gray-light);margin-bottom:4px;}
 
-/* 토스트 */
 .toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:white;padding:9px 14px;border-radius:8px;font-size:12px;font-weight:500;z-index:999;opacity:0;transform:translateY(6px);transition:all 0.22s;pointer-events:none;}
 .toast.show{opacity:1;transform:translateY(0);}
 .toast.success{background:var(--green);}
 .toast.error{background:var(--red);}
 
-/* 모바일 */
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-state{text-align:center;padding:36px;color:var(--text-sub);font-size:12px;}
+.loading-state .spinner{margin:0 auto 12px;}
+
 @media(max-width:640px){
   .layout{flex-direction:column;height:auto;min-height:calc(100vh - 52px);}
   .sidebar{width:100%;min-width:unset;border-right:none;border-bottom:2px solid var(--border);}
@@ -203,13 +195,10 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
   .ftab{flex-shrink:0;}
   .post-list{max-height:35vh;}
   .main{padding:12px;}
-  .detail-wrap{max-width:100%;gap:10px;}
   .top-row{grid-template-columns:1fr;}
-  .html-grid{grid-template-columns:1fr;}
+  .html-grid-3{grid-template-columns:1fr;}
   .card-body{padding:12px 14px;}
   .card-header{padding:10px 14px;}
-  .status-row{gap:6px;}
-  .sbtn{padding:5px 9px;font-size:11px;}
   .header{padding:0 14px;}
   .header-logo{font-size:13px;}
   .header-sub{font-size:11px;}
@@ -235,8 +224,6 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
 
 <div class="layout">
   <div class="sidebar">
-
-    <!-- WordPress -->
     <div class="sidebar-section">
       <div class="section-label">WordPress</div>
       <div class="input-row">
@@ -248,17 +235,6 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
       <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
     </div>
 
-    <!-- Gemini API -->
-    <div class="sidebar-section" style="background:#E8F6EF;">
-      <div class="section-label" style="color:var(--green);">Gemini API</div>
-      <div style="display:flex;gap:6px;">
-        <input class="ifield" id="geminiKey" type="password" placeholder="AIza...">
-        <button class="btn btn-green" onclick="saveGeminiKey()">저장</button>
-      </div>
-      <div style="margin-top:5px;font-size:10px;" id="geminiKeyStatus">키 미입력</div>
-    </div>
-
-    <!-- 필터 -->
     <div class="sidebar-section">
       <div class="section-label">필터</div>
       <div class="filter-tabs">
@@ -270,7 +246,6 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
       </div>
     </div>
 
-    <!-- 검색 -->
     <div class="sidebar-section" style="padding-bottom:10px;">
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
@@ -279,7 +254,7 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
     </div>
 
     <div class="post-list" id="postList">
-      <div class="empty-state">WordPress URL을 입력하고<br>불러오기를 누르세요</div>
+      <div class="empty-state">포스트를 불러오는 중...</div>
     </div>
 
     <div class="stats-bar">
@@ -298,6 +273,17 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
       <div class="placeholder-icon">📋</div>
       <div class="placeholder-text">포스트를 선택하세요</div>
     </div>
+  </div>
+</div>
+
+<!-- 미리보기 모달 -->
+<div class="preview-overlay" id="previewModal">
+  <div class="preview-modal">
+    <div class="preview-modal-header">
+      <div class="preview-modal-title" id="previewTitle">HTML 미리보기</div>
+      <button class="btn btn-ghost" onclick="closePreview()" style="font-size:11px;padding:5px 10px;">✕ 닫기</button>
+    </div>
+    <iframe class="preview-frame" id="previewFrame"></iframe>
   </div>
 </div>
 
@@ -336,28 +322,21 @@ async function sbFetch(path, opts={}) {
   return res.json().catch(()=>null);
 }
 
-// ① 목록용 — id·status·memo·HTML 진행도만 (가벼움)
 async function loadDbMeta() {
   try {
     const data = await sbFetch(TABLE+'?select=id,status,memo,html_orig,html_gemini,html_gpt,html_final');
     dbData = {};
     (data||[]).forEach(r=>{
       dbData[r.id] = {
-        status: r.status,
-        memo: r.memo,
-        // HTML은 있는지 여부만 체크 (진행도 표시용)
-        has_orig: !!r.html_orig,
-        has_gemini: !!r.html_gemini,
-        has_gpt: !!r.html_gpt,
-        has_final: !!r.html_final
+        status: r.status, memo: r.memo,
+        has_orig: !!r.html_orig, has_gemini: !!r.html_gemini,
+        has_gpt: !!r.html_gpt, has_final: !!r.html_final
       };
     });
-    setSyncStatus(true);
-    return true;
+    setSyncStatus(true); return true;
   } catch(e) { setSyncStatus(false, e.message); return false; }
 }
 
-// ② 상세용 — 선택한 포스트의 HTML만 (포스트 클릭 시)
 async function loadDbHtml(id) {
   try {
     const data = await sbFetch(`${TABLE}?select=html_orig,html_gemini,html_gpt,html_final&id=eq.${id}`);
@@ -365,22 +344,17 @@ async function loadDbHtml(id) {
   } catch(e) { return {}; }
 }
 
-// ③ 상태·메모만 저장 (가벼움)
 async function saveStatusMemo(p) {
   try {
     await sbFetch(TABLE, {
       method:'POST',
       headers:{'Prefer':'resolution=merge-duplicates,return=representation'},
-      body:JSON.stringify({
-        id:p.id, title:p.title, status:p.status, memo:p.memo,
-        updated_at:new Date().toISOString()
-      })
+      body:JSON.stringify({ id:p.id, title:p.title, status:p.status, memo:p.memo, updated_at:new Date().toISOString() })
     });
     setSyncStatus(true); return true;
   } catch(e) { setSyncStatus(false, e.message); return false; }
 }
 
-// ④ HTML만 저장 (무거움 — 명시적 저장 시에만)
 async function saveHtml(p) {
   try {
     await sbFetch(TABLE, {
@@ -393,92 +367,78 @@ async function saveHtml(p) {
         updated_at:new Date().toISOString()
       })
     });
-    // 로컬 dbData 진행도 업데이트
     if (dbData[p.id]) {
-      dbData[p.id].has_orig = !!p.html_orig;
-      dbData[p.id].has_gemini = !!p.html_gemini;
-      dbData[p.id].has_gpt = !!p.html_gpt;
-      dbData[p.id].has_final = !!p.html_final;
+      dbData[p.id].has_orig=!!p.html_orig; dbData[p.id].has_gemini=!!p.html_gemini;
+      dbData[p.id].has_gpt=!!p.html_gpt; dbData[p.id].has_final=!!p.html_final;
     }
     setSyncStatus(true); return true;
   } catch(e) { setSyncStatus(false, e.message); return false; }
 }
 
 function setSyncStatus(ok, msg='') {
-  const el = document.getElementById('syncIndicator');
-  el.textContent = ok ? '☁ DB 동기화됨' : '⚠ DB 오류';
-  el.className = 'sync-indicator '+(ok?'ok':'err');
+  const el=document.getElementById('syncIndicator');
+  el.textContent=ok?'☁ DB 동기화됨':'⚠ DB 오류';
+  el.className='sync-indicator '+(ok?'ok':'err');
 }
 
 // ── 상태 ──────────────────────────────────────────────
 let posts=[], currentId=null, currentFilter='all', dbData={};
-let wpTotal = 0;
 
-// ── WordPress 로드 (자동/수동 공용) ──────────────────
+// ── WordPress 로드 ────────────────────────────────────
 async function loadWpPosts() {
-  const url = WP_URL;
-  const perPage = parseInt(document.getElementById('perPage').value) || 100;
-
-  document.getElementById('loadStatus').textContent = '연결 중...';
-  document.getElementById('progressBar').style.width = '0%';
+  const perPage=parseInt(document.getElementById('perPage').value)||100;
+  document.getElementById('loadStatus').textContent='연결 중...';
+  document.getElementById('progressBar').style.width='0%';
 
   try {
-    const headRes = await fetch(`${url}/wp-json/wp/v2/posts?per_page=1`);
+    const headRes=await fetch(`${WP_URL}/wp-json/wp/v2/posts?per_page=1`);
     if (!headRes.ok) throw new Error(`HTTP ${headRes.status}`);
-    wpTotal = parseInt(headRes.headers.get('X-WP-Total') || '0');
+    const wpTotal=parseInt(headRes.headers.get('X-WP-Total')||'0');
 
-    let fetched = [];
-    const pages = Math.ceil(Math.min(wpTotal, perPage) / 100);
-    for (let page = 1; page <= pages; page++) {
-      const limit = Math.min(100, perPage - fetched.length);
-      const res = await fetch(`${url}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt,content`);
+    let fetched=[];
+    const pages=Math.ceil(Math.min(wpTotal,perPage)/100);
+    for (let page=1;page<=pages;page++) {
+      const limit=Math.min(100,perPage-fetched.length);
+      const res=await fetch(`${WP_URL}/wp-json/wp/v2/posts?per_page=${limit}&page=${page}&_fields=id,title,link,date,categories,excerpt,content`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const batch = await res.json();
-      fetched = fetched.concat(batch);
-      document.getElementById('progressBar').style.width = Math.round(fetched.length / Math.min(wpTotal, perPage) * 100) + '%';
-      if (batch.length < limit) break;
+      const batch=await res.json();
+      fetched=fetched.concat(batch);
+      document.getElementById('progressBar').style.width=Math.round(fetched.length/Math.min(wpTotal,perPage)*100)+'%';
+      if (batch.length<limit) break;
     }
 
-    let catMap = {};
+    let catMap={};
     try {
-      const cr = await fetch(`${url}/wp-json/wp/v2/categories?per_page=100`);
-      (await cr.json()).forEach(c => { catMap[c.id] = c.name; });
+      const cr=await fetch(`${WP_URL}/wp-json/wp/v2/categories?per_page=100`);
+      (await cr.json()).forEach(c=>{catMap[c.id]=c.name;});
     } catch {}
 
-    posts = fetched.map(p => {
-      const db = dbData[p.id] || {};
+    posts=fetched.map(p=>{
+      const db=dbData[p.id]||{};
       return {
-        id: p.id,
-        title: p.title?.rendered ? stripHtml(p.title.rendered) : '(제목 없음)',
-        link: p.link,
-        date: (p.date || '').slice(0, 10),
-        category: (p.categories || []).map(cid => catMap[cid] || `#${cid}`).join(', '),
-        excerpt: p.excerpt?.rendered ? stripHtml(p.excerpt.rendered).slice(0, 120) : '',
-        wpContent: p.content?.rendered || '', // WordPress 원본 (임시 보관)
-        status: db.status || 'unreviewed',
-        memo: db.memo || '',
-        // HTML은 진행도만 로컬 보관, 실제 내용은 클릭 시 로드
-        has_orig: db.has_orig || false,
-        has_gemini: db.has_gemini || false,
-        has_gpt: db.has_gpt || false,
-        has_final: db.has_final || false,
-        // HTML 캐시 (한 번 로드 후 재사용)
-        html_orig: null, html_gemini: null, html_gpt: null, html_final: null
+        id:p.id,
+        title:p.title?.rendered?stripHtml(p.title.rendered):'(제목 없음)',
+        link:p.link, date:(p.date||'').slice(0,10),
+        category:(p.categories||[]).map(cid=>catMap[cid]||`#${cid}`).join(', '),
+        wpContent:p.content?.rendered||'',
+        status:db.status||'unreviewed', memo:db.memo||'',
+        has_orig:db.has_orig||false, has_gemini:db.has_gemini||false,
+        has_gpt:db.has_gpt||false, has_final:db.has_final||false,
+        html_orig:null, html_gemini:null, html_gpt:null, html_final:null
       };
     });
 
-    document.getElementById('loadStatus').textContent = `✓ ${posts.length}개 (전체 ${wpTotal}개)`;
-    document.getElementById('headerCount').textContent = `포스트 ${posts.length}개`;
+    document.getElementById('loadStatus').textContent=`✓ ${posts.length}개 (전체 ${wpTotal}개)`;
+    document.getElementById('headerCount').textContent=`포스트 ${posts.length}개`;
     renderList(); updateStats();
-    showToast(`${posts.length}개 로드됨`, 'success');
+    showToast(`${posts.length}개 로드됨`,'success');
   } catch(e) {
-    document.getElementById('loadStatus').textContent = '⚠ ' + e.message;
-    document.getElementById('postList').innerHTML = `<div class="empty-state">연결 실패<br><small>${e.message}</small></div>`;
-    showToast('연결 실패', 'error');
+    document.getElementById('loadStatus').textContent='⚠ '+e.message;
+    document.getElementById('postList').innerHTML=`<div class="empty-state">연결 실패<br><small>${e.message}</small></div>`;
+    showToast('연결 실패','error');
   }
 }
 
-// 수동 새로고침 (새 포스트 확인용)
 async function loadPosts() {
   await loadDbMeta();
   await loadWpPosts();
@@ -504,9 +464,9 @@ function renderList() {
     return;
   }
 
-  const htmlProgress = p => {
-    let filled = (p.has_orig?1:0)+(p.has_gemini?1:0)+(p.has_gpt?1:0)+(p.has_final?1:0);
-    return filled > 0 ? `<span style="color:var(--navy);font-size:9px;">HTML ${filled}/4</span>` : '';
+  const htmlProgress=p=>{
+    const filled=(p.has_orig?1:0)+(p.has_gemini?1:0)+(p.has_gpt?1:0)+(p.has_final?1:0);
+    return filled>0?`<span style="color:var(--navy);font-size:9px;">HTML ${filled}/4</span>`:'';
   };
 
   document.getElementById('postList').innerHTML=filtered.map(p=>`
@@ -537,124 +497,125 @@ function updateStats() {
 
 // ── 상세 ──────────────────────────────────────────────
 async function selectPost(id) {
-  currentId = id;
-  const p = posts.find(x => x.id === id);
+  currentId=id;
+  const p=posts.find(x=>x.id===id);
   if (!p) return;
   renderList();
 
-  // HTML이 아직 로드 안 됐으면 Supabase에서 로드
-  if (p.html_orig === null) {
-    const db = await loadDbHtml(id);
-    p.html_orig = db.html_orig || p.wpContent || '';
-    p.html_gemini = db.html_gemini || '';
-    p.html_gpt = db.html_gpt || '';
-    p.html_final = db.html_final || '';
-    // 진행도 업데이트
-    p.has_orig = !!p.html_orig;
-    p.has_gemini = !!p.html_gemini;
-    p.has_gpt = !!p.html_gpt;
-    p.has_final = !!p.html_final;
+  if (p.html_orig===null) {
+    const db=await loadDbHtml(id);
+    p.html_orig=db.html_orig||p.wpContent||'';
+    p.html_gemini=db.html_gemini||'';
+    p.html_gpt=db.html_gpt||'';
+    p.html_final=db.html_final||'';
+    p.has_orig=!!p.html_orig; p.has_gemini=!!p.html_gemini;
+    p.has_gpt=!!p.html_gpt; p.has_final=!!p.html_final;
   }
 
-  const charCount = s => s ? `${s.length.toLocaleString()}자` : '0자';
+  const cc=s=>s?`${s.length.toLocaleString()}자`:'0자';
 
   document.getElementById('main').innerHTML=`
     <div class="detail-wrap">
 
-      <!-- 상단: 기본정보 + 상태 2열 -->
+      <!-- 상단: 기본정보 + 상태/메모 -->
       <div class="top-row">
         <div class="card">
           <div class="card-body" style="padding:8px 14px;">
-            ${p.category?`<div class="detail-category" style="margin-bottom:2px;">${esc(p.category)}</div>`:''}
-            <div class="detail-title" style="font-size:13px;margin-bottom:4px;line-height:1.3;">${esc(p.title)}</div>
-            <div class="detail-meta" style="font-size:10px;gap:8px;">
+            ${p.category?`<div class="detail-category">${esc(p.category)}</div>`:''}
+            <div class="detail-title">${esc(p.title)}</div>
+            <div class="detail-meta">
               <span>📅 ${p.date}</span><span>#${p.id}</span>
               <a href="${esc(p.link)}" target="_blank">🔗 보기</a>
             </div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-body" style="padding:8px 14px;">
-            <div class="status-row" style="gap:5px;margin-bottom:6px;">
-              <button class="sbtn pass ${p.status==='pass'?'sel':''}" onclick="setStatus('pass')" style="padding:4px 8px;font-size:11px;">✅ 통과</button>
-              <button class="sbtn fix ${p.status==='fix'?'sel':''}" onclick="setStatus('fix')" style="padding:4px 8px;font-size:11px;">⚠️ 수정</button>
-              <button class="sbtn delete ${p.status==='delete'?'sel':''}" onclick="setStatus('delete')" style="padding:4px 8px;font-size:11px;">🗑 삭제</button>
-              <button class="sbtn unreviewed ${p.status==='unreviewed'?'sel':''}" onclick="setStatus('unreviewed')" style="padding:4px 8px;font-size:11px;">— 미검토</button>
+            <div style="display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap;">
+              <button class="sbtn pass ${p.status==='pass'?'sel':''}" onclick="setStatus('pass')">✅ 통과</button>
+              <button class="sbtn fix ${p.status==='fix'?'sel':''}" onclick="setStatus('fix')">⚠️ 수정</button>
+              <button class="sbtn delete ${p.status==='delete'?'sel':''}" onclick="setStatus('delete')">🗑 삭제</button>
+              <button class="sbtn unreviewed ${p.status==='unreviewed'?'sel':''}" onclick="setStatus('unreviewed')">— 미검토</button>
             </div>
             <div style="display:flex;gap:6px;align-items:center;">
-              <textarea class="memo-textarea" id="memoField" placeholder="메모..." style="min-height:36px;height:36px;resize:none;font-size:11px;padding:6px 8px;flex:1;">${esc(p.memo)}</textarea>
+              <textarea class="memo-textarea" id="memoField" placeholder="기준 근거 / 검토 메모...">${esc(p.memo)}</textarea>
               <button class="btn btn-navy" onclick="saveMemo()" style="padding:6px 10px;font-size:11px;height:36px;">☁</button>
-              <span class="memo-sync-status" id="memoSyncStatus" style="font-size:10px;"></span>
+              <span class="memo-sync-status" id="memoSyncStatus"></span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- HTML 버전 관리 카드 -->
+      <!-- HTML 버전 관리 -->
       <div class="card">
-        <div class="card-header" style="padding:8px 14px;">
+        <div class="card-header">
           <span style="font-size:13px;">📝</span>
           <div class="card-header-title">HTML 버전 관리</div>
           <button class="btn btn-ghost" onclick="saveAllHtml()" style="font-size:10px;padding:4px 8px;">☁ 전체 저장</button>
         </div>
-        <div class="card-body" style="padding:12px 14px;">
-          <div class="html-grid">
+        <div class="card-body">
+
+          <!-- 3열: 원본 / ChatGPT / Claude -->
+          <div class="html-grid-3">
 
             <!-- 원본 -->
-            <div class="html-slot">
+            <div>
               <div class="html-slot-header">
                 <span class="html-slot-badge badge-orig">원본</span>
-                <span class="html-slot-label">자동포스팅 원본 HTML</span>
-                <span class="html-char-count" id="cnt-orig">${charCount(p.html_orig)}</span>
+                <span class="html-slot-label">자동포스팅 원본</span>
+                <span class="html-char-count" id="cnt-orig">${cc(p.html_orig)}</span>
+                <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="showPreview('orig','원본')">👁</button>
               </div>
-              <textarea class="html-textarea" id="html-orig" placeholder="WordPress 자동포스팅 원본 HTML..." oninput="updateCharCount('orig')">${esc(p.html_orig)}</textarea>
+              <textarea class="html-textarea" id="html-orig" placeholder="원본 HTML..." oninput="updateCharCount('orig')">${esc(p.html_orig)}</textarea>
             </div>
 
             <!-- ChatGPT -->
-            <div class="html-slot">
+            <div>
               <div class="html-slot-header">
                 <span class="html-slot-badge badge-gpt">ChatGPT</span>
-                <span class="html-slot-label">ChatGPT 수동검토 HTML</span>
-                <span class="html-char-count" id="cnt-gemini">${charCount(p.html_gemini)}</span>
+                <span class="html-slot-label">ChatGPT 수동검토</span>
+                <span class="html-char-count" id="cnt-gemini">${cc(p.html_gemini)}</span>
+                <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="showPreview('gemini','ChatGPT 검토')">👁</button>
               </div>
-              <textarea class="html-textarea" id="html-gemini" placeholder="ChatGPT로 검토 후 수정한 HTML..." oninput="updateCharCount('gemini')">${esc(p.html_gemini)}</textarea>
+              <textarea class="html-textarea" id="html-gemini" placeholder="ChatGPT 검토 HTML..." oninput="updateCharCount('gemini')">${esc(p.html_gemini)}</textarea>
             </div>
 
             <!-- Claude -->
-            <div class="html-slot">
+            <div>
               <div class="html-slot-header">
                 <span class="html-slot-badge badge-claude">Claude</span>
-                <span class="html-slot-label">Claude 수동검토 HTML</span>
-                <span class="html-char-count" id="cnt-gpt">${charCount(p.html_gpt)}</span>
+                <span class="html-slot-label">Claude 수동검토</span>
+                <span class="html-char-count" id="cnt-gpt">${cc(p.html_gpt)}</span>
+                <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="showPreview('gpt','Claude 검토')">👁</button>
               </div>
-              <textarea class="html-textarea" id="html-gpt" placeholder="Claude로 검토 후 수정한 HTML..." oninput="updateCharCount('gpt')">${esc(p.html_gpt)}</textarea>
-            </div>
-
-            <!-- Gemini 최종 -->
-            <div class="html-slot">
-              <div class="html-slot-header">
-                <span class="html-slot-badge badge-final">Gemini 최종</span>
-                <span class="html-slot-label">Gemini API 자동 생성 최종본</span>
-                <span class="html-char-count" id="cnt-final">${charCount(p.html_final)}</span>
-              </div>
-              <div id="gemini-generate-area">
-                ${p.html_final ? `
-                  <textarea class="html-textarea final" id="html-final" oninput="updateCharCount('final')">${esc(p.html_final)}</textarea>
-                  <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
-                    <button class="btn btn-ghost" style="font-size:11px;" onclick="copyHtml('final')">📋 복사</button>
-                    <button class="btn btn-green" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
-                  </div>
-                ` : `
-                  <div style="padding:10px 12px;background:var(--green-light);border-radius:8px;font-size:12px;color:var(--green);line-height:1.6;margin-bottom:8px;">
-                    ChatGPT·Claude HTML 입력 후 아래 버튼을 누르세요.<br>Gemini가 두 버전을 비교 분석해서 최종 HTML을 생성합니다.
-                  </div>
-                  <button class="btn btn-green btn-full" onclick="generateFinal()">✨ Gemini 최종본 생성</button>
-                `}
-              </div>
+              <textarea class="html-textarea" id="html-gpt" placeholder="Claude 검토 HTML..." oninput="updateCharCount('gpt')">${esc(p.html_gpt)}</textarea>
             </div>
 
           </div>
+
+          <!-- Gemini 프롬프트 복사 버튼 -->
+          <div class="prompt-bar">
+            <div class="prompt-bar-text">
+              <strong>Gemini에게 붙여넣기</strong> — 프롬프트 + ChatGPT + Claude HTML을 복사해서 Gemini에 붙여넣으세요.
+            </div>
+            <button class="btn btn-orange" onclick="copyPromptForGemini()">📋 프롬프트 복사</button>
+          </div>
+
+          <!-- Gemini 최종본 입력 -->
+          <div>
+            <div class="html-slot-header">
+              <span class="html-slot-badge badge-final">Gemini 최종</span>
+              <span class="html-slot-label">Gemini 수동검토 최종본 — 여기에 붙여넣기 후 저장</span>
+              <span class="html-char-count" id="cnt-final">${cc(p.html_final)}</span>
+              <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="showPreview('final','Gemini 최종')">👁</button>
+            </div>
+            <textarea class="html-textarea final" id="html-final" placeholder="Gemini가 생성한 최종 HTML을 여기에 붙여넣으세요..." oninput="updateCharCount('final')">${esc(p.html_final)}</textarea>
+            <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
+              <button class="btn btn-ghost" style="font-size:11px;" onclick="copyHtml('final')">📋 복사</button>
+              <button class="btn btn-green" style="font-size:11px;" onclick="saveFinalHtml()">☁ 최종본 저장</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -662,228 +623,155 @@ async function selectPost(id) {
   `;
 }
 
-// ── HTML 글자수 업데이트 ──────────────────────────────
-function updateCharCount(type) {
-  const ta = document.getElementById('html-'+type);
-  const cnt = document.getElementById('cnt-'+type);
-  if (ta && cnt) cnt.textContent = ta.value.length.toLocaleString()+'자';
+// ── 프롬프트 복사 ─────────────────────────────────────
+function copyPromptForGemini() {
+  const p=posts.find(x=>x.id===currentId);
+  if (!p) return;
+  const gpt=document.getElementById('html-gemini')?.value?.trim()||'';
+  const claude=document.getElementById('html-gpt')?.value?.trim()||'';
+  const orig=document.getElementById('html-orig')?.value?.trim()||'';
+  const memo=document.getElementById('memoField')?.value?.trim()||p.memo||'';
+
+  if (!gpt&&!claude) { showToast('ChatGPT 또는 Claude HTML을 먼저 입력하세요','error'); return; }
+
+  const prompt=`당신은 건설 기술 콘텐츠 편집 전문가입니다.
+아래 HTML 버전들을 비교하여 최종 발행용 HTML을 생성하세요.
+
+## 최우선 원칙
+- 사실 정확성이 최우선입니다.
+- 기준 근거에 없는 수치, 법령명, 기준번호를 새로 만들지 않습니다.
+- 기준 근거가 불충분한 수치는 "실무 참고값", "설계도서에 따라" 등 조건부 표현으로 완화합니다.
+- 기준 근거에 명확히 있는 수치는 삭제하지 말고 정확히 유지합니다.
+
+## 판단 기준
+1. KCS/KDS/KS/법령/고시 원문 또는 제공된 기준 근거와 일치하는 내용 우선
+2. 건설 현장 용어의 정확성 우선 (PHC파일 항타, 사춤, 동바리 등)
+3. 금지표현 완전 제거 ("~년간의 경험", "전문가로서", "무조건", "절대" 등)
+4. 참고기준 섹션은 실제 본문에서 사용한 기준만 포함
+5. 문장은 블로그 독자가 이해하기 쉽게 간결하게 정리
+
+## 추가 안전 규칙
+- 기준 근거가 없으면 법령·기준 수치를 새로 확정하지 않는다
+- 근거 없는 수치는 삭제하거나 조건부 표현으로 완화한다
+- 원본, 검토본, 기준 근거 어디에도 없는 내용을 임의로 추가하지 않는다
+
+## HTML 출력 규칙
+- 순수 HTML 코드만 출력 (마크다운 펜스 없이)
+- 첫 줄은 HTML 태그로 시작 (<h2> 또는 <p>)
+- <h1> 사용 금지
+- 불필요한 id, class, style 속성 제거
+- 외부 링크 사용 금지
+- 최종 HTML에 "ChatGPT", "Claude", "Gemini", "검토본" 표현 넣지 않음
+
+${orig?`## 원본 HTML\n${orig}\n\n`:''}## ChatGPT 검토 HTML
+${gpt||'(미입력)'}
+
+## Claude 검토 HTML
+${claude||'(미입력)'}
+
+## 기준 근거 및 검토 메모
+${memo||'(없음)'}
+
+위 내용을 바탕으로 최종 발행용 HTML만 출력하세요.`;
+
+  navigator.clipboard.writeText(prompt)
+    .then(()=>showToast('프롬프트 복사됨 — Gemini에 붙여넣으세요 ✓','success'))
+    .catch(()=>{ document.execCommand && document.execCommand('copy'); showToast('복사됨','success'); });
+}
+
+// ── 최종본 저장 ───────────────────────────────────────
+async function saveFinalHtml() {
+  const p=posts.find(x=>x.id===currentId);
+  if (!p) return;
+  const finalVal=document.getElementById('html-final')?.value||'';
+  if (!finalVal.trim()) { showToast('최종본을 먼저 입력하세요','error'); return; }
+  p.html_final=finalVal;
+  p.has_final=!!finalVal;
+  const ok=await saveHtml(p);
+  renderList();
+  showToast(ok?'☁ 최종본 저장됨':'⚠ 저장 실패', ok?'success':'error');
+}
+
+// ── HTML 전체 저장 ────────────────────────────────────
+async function saveAllHtml() {
+  const p=posts.find(x=>x.id===currentId);
+  if (!p) return;
+  p.html_orig=document.getElementById('html-orig')?.value??p.html_orig;
+  p.html_gemini=document.getElementById('html-gemini')?.value??p.html_gemini;
+  p.html_gpt=document.getElementById('html-gpt')?.value??p.html_gpt;
+  p.html_final=document.getElementById('html-final')?.value??p.html_final;
+  p.has_orig=!!p.html_orig; p.has_gemini=!!p.html_gemini;
+  p.has_gpt=!!p.html_gpt; p.has_final=!!p.html_final;
+  const ok=await saveHtml(p);
+  renderList();
+  showToast(ok?'☁ HTML 저장됨':'⚠ 저장 실패', ok?'success':'error');
+}
+
+// ── 미리보기 ──────────────────────────────────────────
+function showPreview(type, label) {
+  const ta=document.getElementById('html-'+type);
+  if (!ta||!ta.value.trim()) { showToast('내용이 없습니다','error'); return; }
+  document.getElementById('previewTitle').textContent=`👁 ${label} 미리보기`;
+  document.getElementById('previewFrame').srcdoc=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;max-width:800px;margin:0 auto;font-size:14px;line-height:1.8;color:#2C3E50;}
+    h2{color:#1B2F5E;font-size:18px;margin:20px 0 10px;}h3{color:#2C3E50;font-size:15px;margin:16px 0 8px;}
+    table{border-collapse:collapse;width:100%;margin:12px 0;}th,td{border:1px solid #ddd;padding:8px 12px;font-size:13px;}
+    th{background:#E8ECF5;font-weight:600;}ul,ol{padding-left:20px;margin:8px 0;}li{margin:4px 0;}p{margin:8px 0;}</style>
+    </head><body>${ta.value}</body></html>`;
+  document.getElementById('previewModal').classList.add('show');
+}
+function closePreview() {
+  document.getElementById('previewModal').classList.remove('show');
+  document.getElementById('previewFrame').srcdoc='';
+}
+document.getElementById('previewModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closePreview();});
+
+// ── 상태 변경 ─────────────────────────────────────────
+async function setStatus(status) {
+  const p=posts.find(x=>x.id===currentId);
+  if (!p) return;
+  p.status=status;
+  if (dbData[p.id]) dbData[p.id].status=status;
+  selectPost(currentId); updateStats();
+  const ok=await saveStatusMemo(p);
+  showToast(`${sLabel(status)}로 변경 — ${ok?'☁ 저장됨':'⚠ 저장 실패'}`, ok?'success':'error');
+}
+
+async function saveMemo() {
+  const p=posts.find(x=>x.id===currentId);
+  if (!p) return;
+  p.memo=document.getElementById('memoField').value;
+  if (dbData[p.id]) dbData[p.id].memo=p.memo;
+  const statusEl=document.getElementById('memoSyncStatus');
+  if (statusEl) statusEl.textContent='저장 중...';
+  const ok=await saveStatusMemo(p);
+  if (statusEl) statusEl.textContent=ok?'☁':'⚠';
+  showToast(ok?'메모 저장됨':'저장 실패', ok?'success':'error');
 }
 
 // ── HTML 복사 ─────────────────────────────────────────
 function copyHtml(type) {
-  const ta = document.getElementById('html-'+type);
-  if (!ta || !ta.value) { showToast('복사할 내용이 없습니다','error'); return; }
+  const ta=document.getElementById('html-'+type);
+  if (!ta||!ta.value) { showToast('복사할 내용이 없습니다','error'); return; }
   navigator.clipboard.writeText(ta.value).then(()=>showToast('클립보드에 복사됨','success')).catch(()=>{
     ta.select(); document.execCommand('copy'); showToast('복사됨','success');
   });
 }
 
-// ── Gemini API 키 ──────────────────────────────────────
-function saveGeminiKey() {
-  const key = document.getElementById('geminiKey').value.trim();
-  if (!key) { showToast('키를 입력하세요','error'); return; }
-  localStorage.setItem('bl_gemini_key', key);
-  document.getElementById('geminiKeyStatus').textContent = '✓ 저장됨';
-  document.getElementById('geminiKeyStatus').style.color = 'var(--green)';
-  showToast('Gemini API 키 저장됨','success');
-}
-
-function loadGeminiKey() {
-  const key = localStorage.getItem('bl_gemini_key');
-  if (key) {
-    document.getElementById('geminiKey').value = key;
-    document.getElementById('geminiKeyStatus').textContent = '✓ 저장됨';
-    document.getElementById('geminiKeyStatus').style.color = 'var(--green)';
-  }
-}
-
-function getGeminiKey() { return document.getElementById('geminiKey').value.trim(); }
-
-// ── Gemini 최종본 생성 ────────────────────────────────
-async function generateFinal() {
-  const p = posts.find(x=>x.id===currentId);
-  if (!p) return;
-
-  const originalHtml = document.getElementById('html-orig')?.value?.trim() || '';
-  const chatgptHtml = document.getElementById('html-gemini')?.value?.trim() || '';
-  const claudeHtml = document.getElementById('html-gpt')?.value?.trim() || '';
-  const referenceNotes = document.getElementById('memoField')?.value?.trim() || p.memo || '';
-
-  if (!chatgptHtml && !claudeHtml) { showToast('ChatGPT 또는 Claude HTML을 먼저 입력하세요','error'); return; }
-
-  const key = getGeminiKey();
-  if (!key) { showToast('Gemini API 키를 먼저 입력하세요','error'); return; }
-
-  document.getElementById('gemini-generate-area').innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px;padding:12px;background:var(--green-light);border-radius:8px;font-size:12px;color:var(--green);">
-      <div class="spinner" style="border-top-color:var(--green);"></div>
-      Gemini가 두 버전을 비교 분석 중입니다...
-    </div>
-  `;
-
-const prompt = `
-당신은 건설 기술 콘텐츠 편집 전문가입니다.
-아래 3개의 HTML 버전을 비교하여 최종 발행용 HTML을 생성하세요.
-
-입력값:
-1. 원본 HTML: 자동포스팅 원문
-2. ChatGPT 검토 HTML: 1차 수정본
-3. Claude 검토 HTML: 2차 수정본
-4. 기준 근거: 사용자가 제공한 KCS/KDS/KS/법령/고시/제조사 시방서/검토 메모
-
-## 최우선 원칙
-- 최종 HTML은 사실 정확성이 최우선입니다.
-- ChatGPT와 Claude 수정본이 모두 같은 내용을 제안해도, 기준 근거와 충돌하면 채택하지 않습니다.
-- 기준 근거에 없는 수치, 법령명, 기준번호, 하자담보 기간, 시험빈도, 허용오차를 새로 만들지 않습니다.
-- 기준 근거가 불충분한 수치는 "기준"으로 단정하지 말고 "실무 참고값", "일반적으로", "제품 시방서에 따라", "설계도서에 따라"처럼 조건부 표현으로 완화합니다.
-- 단, 기준 근거에 명확히 있는 수치는 삭제하지 말고 정확히 유지합니다.
-
-## 판단 기준
-1. KCS/KDS/KS/법령/고시 원문 또는 제공된 기준 근거와 일치하는 내용 우선
-2. 건설 현장 용어의 정확성 우선
-   - 예: PHC파일 항타, 사춤, 동바리, 거푸집, 방수층, 하자담보책임기간 등
-3. 금지표현 완전 제거
-   - "~년간의 경험", "전문가로서", "반드시 전문가에게", "완벽한", "무조건", "항상", "절대" 등 근거 없는 과장 표현
-   - "법적으로 문제없다", "반드시 인정된다", "무조건 하자다", "항상 책임진다", "전액 보상된다" 같은 법률·하자판정 단정 표현
-4. 참고기준 섹션은 실제 본문에서 사용한 기준만 포함하며, 기준 근거가 부족한 경우 참고기준을 새로 지어내지 않음
-5. 문장은 블로그 독자가 이해하기 쉽게 간결하게 정리
-6. HTML 구조는 유지하되, 중복 문단과 과도한 표는 정리 (단, 실무 서식 샘플이나 양식 예시는 내용 수치만 교정할 뿐 레이아웃 구조 자체를 임의로 삭제하지 말 것)
-
-## 추가 안전 규칙 (Strict Safety Rules)
-- 기준 근거 및 검토 메모가 비어 있거나 부족한 경우, 법령·기준 수치·시험빈도·허용오차·하자담보 기간을 새로 확정하지 않는다.
-- 근거가 없는 기존 수치는 삭제하거나 조건부 표현으로 완화한다.
-- 원본, 검토본, 기준 근거 어디에도 없는 새로운 사례, 수치, 법령명, 기준명, 공법명, 제품명을 임의로 추가하지 않는다.
-- 표 안의 수치와 본문 수치가 충돌하면 기준 근거에 있는 값으로 통일한다.
-- 근거가 불명확한 표의 수치는 "실무 참고", "예시", "제품별 상이"로 표시하거나 삭제한다.
-
-## 수치·기준 처리 규칙
-- 기준 근거에 명확히 있는 수치 → 확정 기준으로 작성
-- 제조사 시방서에만 있는 수치 → "제조사 시방서에서 요구하는 경우가 많다" 또는 "제품별 기준 확인"으로 작성
-- 실무 관행 수치 → "실무 참고 범위"로 작성
-- 출처가 불명확한 수치 → 삭제하거나 조건부 표현으로 완화
-- 두 검토본의 수치가 충돌하면 기준 근거에 있는 수치만 채택
-- 기준 근거가 없으면 더 보수적으로 작성하고, 특정 수치를 단정하지 않음
-
-## 두 검토본 비교 규칙
-- 두 버전에서 동일하게 수정된 부분이라도 기준 근거와 맞는지 확인 후 채택
-- 한 버전에서만 수정된 부분은 기준 근거가 있거나 명백히 표현을 안전하게 만든 경우에만 채택
-- 원본이 더 정확하면 원본 표현을 유지
-- ChatGPT/Claude 수정본 모두 부정확하면 새로 안전한 문장으로 재작성
-- 불확실한 내용은 확정 표현 대신 원인, 조건, 기준 확인 방식 중심으로 작성
-
-## HTML 출력 규칙
-- 최종 결과는 설명이나 마크다운 코드블록 펜스(\`\`\`html 또는 \`\`\`)를 전면 배제하고 오직 순수 HTML 코드만 출력
-- 출력되는 문서의 첫 라인은 무조건 HTML 태그(예: <h2> 또는 <p>)로 시작되어야 함
-- <h1>은 사용하지 말고 <h2>, <h3>, <p>, <ul>, <li>, <table> 중심으로 작성
-- 불필요한 id, class, style 속성은 제거
-- 외부 링크는 사용하지 않음
-- 참고기준 섹션은 문서 하단에 유지하되 실제 본문에서 사용하고 검증된 기준만 포함 (지어내기 금지)
-- 최종 HTML 안에 "ChatGPT", "Claude", "Gemini", "검토본"이라는 표현을 넣지 않음
-
-## 원본 HTML
-${originalHtml}
-
-## ChatGPT 검토 HTML
-${chatgptHtml}
-
-## Claude 검토 HTML
-${claudeHtml}
-
-## 기준 근거 및 검토 메모
-${referenceNotes}
-
-위 내용을 바탕으로 최종 발행용 HTML만 출력하세요.
-`;
-
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
-        })
-      }
-    );
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      throw new Error(err?.error?.message || `HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    let html = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    html = html.replace(/^```html?\n?/,'').replace(/\n?```$/,'').trim();
-
-    p.html_final = html;
-    p.has_final = !!html;
-    const ok = await saveHtml(p);
-
-    document.getElementById('gemini-generate-area').innerHTML = `
-      <textarea class="html-textarea final" id="html-final" oninput="updateCharCount('final')">${esc(html)}</textarea>
-      <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
-        <button class="btn btn-ghost" style="font-size:11px;" onclick="copyHtml('final')">📋 복사</button>
-        <button class="btn btn-green" style="font-size:11px;" onclick="generateFinal()">🔄 재생성</button>
-      </div>
-    `;
-    document.getElementById('cnt-final').textContent = html.length.toLocaleString()+'자';
-    renderList();
-    showToast(`최종본 생성 완료 — ${ok?'☁ DB 저장됨':'⚠ DB 저장 실패'}`, ok?'success':'error');
-  } catch(e) {
-    document.getElementById('gemini-generate-area').innerHTML = `
-      <div style="padding:10px 12px;background:var(--red-light);border-radius:8px;font-size:12px;color:var(--red);margin-bottom:8px;">⚠ ${esc(e.message)}</div>
-      <button class="btn btn-green btn-full" onclick="generateFinal()">🔄 다시 시도</button>
-    `;
-    showToast('생성 실패: '+e.message,'error');
-  }
-}
-
-// ── HTML 전체 저장 ────────────────────────────────────
-async function saveAllHtml() {
-  const p = posts.find(x=>x.id===currentId);
-  if (!p) return;
-  p.html_orig = document.getElementById('html-orig')?.value ?? p.html_orig;
-  p.html_gemini = document.getElementById('html-gemini')?.value ?? p.html_gemini;
-  p.html_gpt = document.getElementById('html-gpt')?.value ?? p.html_gpt;
-  p.html_final = document.getElementById('html-final')?.value ?? p.html_final;
-  p.has_orig = !!p.html_orig; p.has_gemini = !!p.html_gemini;
-  p.has_gpt = !!p.html_gpt; p.has_final = !!p.html_final;
-  const ok = await saveHtml(p);
-  renderList();
-  showToast(ok ? '☁ HTML 저장됨' : '⚠ 저장 실패', ok?'success':'error');
-}
-
-// ── 상태 변경 ─────────────────────────────────────────
-async function setStatus(status) {
-  const p = posts.find(x=>x.id===currentId);
-  if (!p) return;
-  p.status = status;
-  if (dbData[p.id]) dbData[p.id].status = status;
-  selectPost(currentId); updateStats();
-  const ok = await saveStatusMemo(p);
-  showToast(`${sLabel(status)}로 변경 — ${ok?'☁ 저장됨':'⚠ 저장 실패'}`, ok?'success':'error');
-}
-
-async function saveMemo() {
-  const p = posts.find(x=>x.id===currentId);
-  if (!p) return;
-  p.memo = document.getElementById('memoField').value;
-  if (dbData[p.id]) dbData[p.id].memo = p.memo;
-  const statusEl = document.getElementById('memoSyncStatus');
-  if (statusEl) statusEl.textContent = '저장 중...';
-  const ok = await saveStatusMemo(p);
-  if (statusEl) statusEl.textContent = ok ? '☁ 저장됨' : '⚠ 저장 실패';
-  showToast(ok ? '메모 저장됨' : '저장 실패', ok?'success':'error');
+function updateCharCount(type) {
+  const ta=document.getElementById('html-'+type);
+  const cnt=document.getElementById('cnt-'+type);
+  if (ta&&cnt) cnt.textContent=ta.value.length.toLocaleString()+'자';
 }
 
 // ── 내보내기 ──────────────────────────────────────────
 function showExport() {
-  const lines=['ID,제목,카테고리,날짜,상태,원본,Gemini,ChatGPT,최종,메모,링크'];
+  const lines=['ID,제목,카테고리,날짜,상태,원본,ChatGPT,Claude,최종,메모,링크'];
   posts.forEach(p=>{
     lines.push([p.id,`"${p.title.replace(/"/g,'""')}"`,`"${p.category.replace(/"/g,'""')}"`,
-      p.date, sLabel(p.status),
-      p.html_orig?'O':'', p.html_gemini?'O':'', p.html_gpt?'O':'', p.html_final?'O':'',
-      `"${(p.memo||'').replace(/"/g,'""').replace(/\n/g,' ')}"`, p.link].join(','));
+      p.date,sLabel(p.status),
+      p.has_orig?'O':'',p.has_gemini?'O':'',p.has_gpt?'O':'',p.has_final?'O':'',
+      `"${(p.memo||'').replace(/"/g,'""').replace(/\n/g,' ')}"`,p.link].join(','));
   });
   document.getElementById('exportText').value=lines.join('\n');
   document.getElementById('exportModal').classList.add('show');
@@ -901,10 +789,6 @@ function downloadExport(){
 function stripHtml(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent||d.innerText||'';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function sLabel(s){return {pass:'통과',fix:'수정필요',delete:'삭제',unreviewed:'미검토'}[s]||s;}
-function copyText(text) {
-  const decoded = text.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
-  navigator.clipboard.writeText(decoded).then(()=>showToast('복사됨','success')).catch(()=>showToast('복사 실패','error'));
-}
 function showToast(msg,type=''){
   const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');
   clearTimeout(t._t);t._t=setTimeout(()=>{t.className='toast';},2800);
@@ -912,18 +796,13 @@ function showToast(msg,type=''){
 
 document.getElementById('exportModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeExport();});
 
-// ── Service Worker ─────────────────────────────────────
-if('serviceWorker' in navigator && location.protocol !== 'file:'){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  });
+if('serviceWorker' in navigator&&location.protocol!=='file:'){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});
 }
 
-// ── 초기화 — 접속 시 자동 실행 ──────────────────────
-window.addEventListener('load', async () => {
-  loadGeminiKey();
-  document.getElementById('postList').innerHTML = '<div class="loading-state"><div class="spinner"></div>불러오는 중...</div>';
-  document.getElementById('syncIndicator').textContent = '연결 중...';
+window.addEventListener('load', async ()=>{
+  document.getElementById('postList').innerHTML='<div class="loading-state"><div class="spinner"></div>불러오는 중...</div>';
+  document.getElementById('syncIndicator').textContent='연결 중...';
   await loadDbMeta();
   await loadWpPosts();
 });
