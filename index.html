@@ -583,6 +583,8 @@ async function selectPost(id) {
                 <span class="html-slot-label">자동포스팅 원본</span>
                 <span class="html-char-count" id="cnt-orig">${cc(p.html_orig)}</span>
                 <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="showPreview('orig','원본')">👁</button>
+                <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="copyHtml('orig')">📋 복사</button>
+                <button class="btn btn-green" style="font-size:9px;padding:2px 6px;" onclick="pasteHtml('orig')">📥 붙여넣기</button>
               </div>
               <textarea class="html-textarea" id="html-orig" placeholder="원본 HTML..." oninput="updateCharCount('orig')">${esc(p.html_orig)}</textarea>
             </div>
@@ -594,6 +596,8 @@ async function selectPost(id) {
                 <span class="html-slot-label">ChatGPT 수동검토</span>
                 <span class="html-char-count" id="cnt-gemini">${cc(p.html_gemini)}</span>
                 <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="showPreview('gemini','ChatGPT 검토')">👁</button>
+                <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="copyHtml('gemini')">📋 복사</button>
+                <button class="btn btn-green" style="font-size:9px;padding:2px 6px;" onclick="pasteHtml('gemini')">📥 붙여넣기</button>
               </div>
               <textarea class="html-textarea" id="html-gemini" placeholder="ChatGPT 검토 HTML..." oninput="updateCharCount('gemini')">${esc(p.html_gemini)}</textarea>
             </div>
@@ -605,6 +609,8 @@ async function selectPost(id) {
                 <span class="html-slot-label">Claude 수동검토</span>
                 <span class="html-char-count" id="cnt-gpt">${cc(p.html_gpt)}</span>
                 <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="showPreview('gpt','Claude 검토')">👁</button>
+                <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="copyHtml('gpt')">📋 복사</button>
+                <button class="btn btn-green" style="font-size:9px;padding:2px 6px;" onclick="pasteHtml('gpt')">📥 붙여넣기</button>
               </div>
               <textarea class="html-textarea" id="html-gpt" placeholder="Claude 검토 HTML..." oninput="updateCharCount('gpt')">${esc(p.html_gpt)}</textarea>
             </div>
@@ -626,6 +632,7 @@ async function selectPost(id) {
               <span class="html-slot-label">Gemini 수동검토 최종본 — 여기에 붙여넣기 후 저장</span>
               <span class="html-char-count" id="cnt-final">${cc(p.html_final)}</span>
               <button class="btn btn-ghost" style="font-size:9px;padding:2px 6px;" onclick="showPreview('final','Gemini 최종')">👁</button>
+              <button class="btn btn-green" style="font-size:9px;padding:2px 6px;" onclick="pasteHtml('final')">📥 붙여넣기</button>
             </div>
             <textarea class="html-textarea final" id="html-final" placeholder="Gemini가 생성한 최종 HTML을 여기에 붙여넣으세요..." oninput="updateCharCount('final')">${esc(p.html_final)}</textarea>
             <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
@@ -779,6 +786,21 @@ async function saveMemo() {
   const ok=await saveStatusMemo(p);
   if (statusEl) statusEl.textContent=ok?'☁':'⚠';
   showToast(ok?'메모 저장됨':'저장 실패', ok?'success':'error');
+}
+
+// ── HTML 붙여넣기 (클립보드 → 입력창) ────────────────
+async function pasteHtml(type) {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) { showToast('클립보드가 비어있습니다','error'); return; }
+    const ta = document.getElementById('html-'+type);
+    if (!ta) return;
+    ta.value = text;
+    updateCharCount(type);
+    showToast('붙여넣기 완료','success');
+  } catch(e) {
+    showToast('클립보드 접근 실패 — 직접 붙여넣기(Ctrl+V) 하세요','error');
+  }
 }
 
 // ── HTML 복사 ─────────────────────────────────────────
