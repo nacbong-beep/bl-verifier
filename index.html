@@ -796,8 +796,16 @@ async function saveFinalHtml() {
   if (!p) return;
   const finalVal=document.getElementById('html-final')?.value||'';
   if (!finalVal.trim()) { showToast('최종본을 먼저 입력하세요','error'); return; }
+  // 현재 화면의 모든 입력창 값을 p에 반영 (null 덮어쓰기 방지)
+  const origVal=document.getElementById('html-orig')?.value;
+  const geminiVal=document.getElementById('html-gemini')?.value;
+  const gptVal=document.getElementById('html-gpt')?.value;
+  if (origVal!==undefined) p.html_orig=origVal;
+  if (geminiVal!==undefined) p.html_gemini=geminiVal;
+  if (gptVal!==undefined) p.html_gpt=gptVal;
   p.html_final=finalVal;
-  p.has_final=!!finalVal;
+  p.has_orig=!!p.html_orig; p.has_gemini=!!p.html_gemini;
+  p.has_gpt=!!p.html_gpt; p.has_final=!!p.html_final;
   const ok=await saveHtml(p);
   renderList();
   showToast(ok?'☁ 최종본 저장됨':'⚠ 저장 실패', ok?'success':'error');
@@ -877,12 +885,11 @@ async function pasteHtml(type) {
   }
 }
 
-// ── HTML 복사 (코드블록으로 감싸서 Claude에서 렌더링 방지) ──
+// ── HTML 복사 ─────────────────────────────────────────
 function copyHtml(type) {
   const ta=document.getElementById('html-'+type);
   if (!ta||!ta.value) { showToast('복사할 내용이 없습니다','error'); return; }
-  const wrapped = '```html\n' + ta.value + '\n```';
-  navigator.clipboard.writeText(wrapped).then(()=>showToast('클립보드에 복사됨 (Claude용)','success')).catch(()=>{
+  navigator.clipboard.writeText(ta.value).then(()=>showToast('클립보드에 복사됨','success')).catch(()=>{
     ta.select(); document.execCommand('copy'); showToast('복사됨','success');
   });
 }
