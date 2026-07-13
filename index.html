@@ -371,7 +371,10 @@ function buildPostsFromDb() {
 async function loadDbHtml(id) {
   try {
     const data = await sbFetch(`${TABLE}?select=html_orig,html_gemini,html_gpt,html_final&id=eq.${id}`);
-    return data?.[0] || {};
+    const row = data?.[0] || {};
+    // 원본 HTML에서 WordPress 클래스 자동 제거
+    if (row.html_orig) row.html_orig = cleanWpHtml(row.html_orig);
+    return row;
   } catch(e) { return {}; }
 }
 
@@ -901,12 +904,22 @@ function downloadExport(){
 }
 
 // ── 유틸 ──────────────────────────────────────────────
-// ── h2부터 시작 (이미지 태그 제거) ──────────────────
-function trimToH2(html) {
+// ── WordPress 클래스 제거 + h2부터 시작 ──────────────
+function cleanWpHtml(html) {
   if (!html) return '';
+  // h2부터 시작
   const idx = html.indexOf('<h2');
-  if (idx === -1) return html;
-  return html.slice(idx);
+  const trimmed = idx === -1 ? html : html.slice(idx);
+  // WordPress 자동 클래스 제거
+  return trimmed
+    .replace(/\s*class="[^"]*wp-block-[^"]*"/gi, '')
+    .replace(/\s*class="[^"]*has-[^"]*"/gi, '')
+    .replace(/\s*class=""/gi, '')
+    .replace(/\s*id="[^"]*"/gi, '');
+}
+
+function trimToH2(html) {
+  return cleanWpHtml(html);
 }
 
 function stripHtml(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent||d.innerText||'';}
