@@ -373,7 +373,18 @@ async function loadDbHtml(id) {
     const data = await sbFetch(`${TABLE}?select=html_orig,html_gemini,html_gpt,html_final&id=eq.${id}`);
     const row = data?.[0] || {};
     // 원본 HTML에서 WordPress 클래스 자동 제거
-    if (row.html_orig) row.html_orig = cleanWpHtml(row.html_orig);
+    if (row.html_orig) {
+      row.html_orig = cleanWpHtml(row.html_orig);
+    } else {
+      // Supabase에 없으면 WordPress API에서 직접 가져오기
+      try {
+        const res = await fetch(`${WP_URL}/wp-json/wp/v2/posts/${id}?_fields=content`);
+        if (res.ok) {
+          const wpData = await res.json();
+          row.html_orig = cleanWpHtml(wpData.content?.rendered || '');
+        }
+      } catch {}
+    }
     return row;
   } catch(e) { return {}; }
 }
