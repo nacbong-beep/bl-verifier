@@ -262,7 +262,8 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
       <div class="stat-item"><span class="sdot fix"></span><span class="stat-num fix" id="s-fix">0</span></div>
       <div class="stat-item"><span class="sdot delete"></span><span class="stat-num delete" id="s-delete">0</span></div>
       <div class="stat-item"><span class="sdot unreviewed"></span><span class="stat-num unreviewed" id="s-unreviewed">0</span></div>
-      <div style="margin-left:auto;">
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-ghost" onclick="showPromptModal()" style="font-size:10px;padding:4px 9px;">⚙ 프롬프트</button>
         <button class="btn btn-ghost" onclick="showExport()" style="font-size:10px;padding:4px 9px;">내보내기</button>
       </div>
     </div>
@@ -284,6 +285,23 @@ body{font-family:var(--font);background:#F0F2F7;color:var(--text);min-height:100
       <button class="btn btn-ghost" onclick="closePreview()" style="font-size:11px;padding:5px 10px;">✕ 닫기</button>
     </div>
     <iframe class="preview-frame" id="previewFrame"></iframe>
+  </div>
+</div>
+
+<!-- 프롬프트 관리 모달 -->
+<div class="modal-overlay" id="promptModal">
+  <div class="modal" style="width:700px;max-width:95vw;">
+    <div class="modal-title">⚙ 프롬프트 관리</div>
+    <div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;">
+      📋 프롬프트 복사 버튼 클릭 시 이 내용 + ChatGPT HTML + Claude HTML + 메모가 함께 복사됩니다.
+    </div>
+    <textarea id="promptEditor" style="width:100%;height:380px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:monospace;color:var(--text);resize:vertical;outline:none;line-height:1.6;background:var(--gray-light);"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;align-items:center;">
+      <button class="btn btn-ghost" onclick="resetPrompt()" style="font-size:11px;">기본값으로 초기화</button>
+      <div style="flex:1;"></div>
+      <button class="btn btn-ghost" onclick="closePromptModal()">닫기</button>
+      <button class="btn btn-navy" onclick="savePrompt()">저장</button>
+    </div>
   </div>
 </div>
 
@@ -420,7 +438,7 @@ async function loadWpPosts() {
         title:p.title?.rendered?stripHtml(p.title.rendered):'(제목 없음)',
         link:p.link, date:(p.date||'').slice(0,10),
         category:(p.categories||[]).map(cid=>catMap[cid]||`#${cid}`).join(', '),
-        wpContent:p.content?.rendered||'',
+        wpContent:trimToH2(p.content?.rendered||''),
         status:db.status||'unreviewed', memo:db.memo||'',
         has_orig:db.has_orig||false, has_gemini:db.has_gemini||false,
         has_gpt:db.has_gpt||false, has_final:db.has_final||false,
@@ -623,18 +641,8 @@ async function selectPost(id) {
   `;
 }
 
-// ── 프롬프트 복사 ─────────────────────────────────────
-function copyPromptForGemini() {
-  const p=posts.find(x=>x.id===currentId);
-  if (!p) return;
-  const gpt=document.getElementById('html-gemini')?.value?.trim()||'';
-  const claude=document.getElementById('html-gpt')?.value?.trim()||'';
-  const orig=document.getElementById('html-orig')?.value?.trim()||'';
-  const memo=document.getElementById('memoField')?.value?.trim()||p.memo||'';
-
-  if (!gpt&&!claude) { showToast('ChatGPT 또는 Claude HTML을 먼저 입력하세요','error'); return; }
-
-  const prompt=`당신은 건설 기술 콘텐츠 편집 전문가입니다.
+// ── 프롬프트 관리 ─────────────────────────────────────
+const DEFAULT_PROMPT = `당신은 건설 기술 콘텐츠 편집 전문가입니다.
 아래 HTML 버전들을 비교하여 최종 발행용 HTML을 생성하세요.
 
 ## 최우선 원칙
@@ -661,18 +669,42 @@ function copyPromptForGemini() {
 - <h1> 사용 금지
 - 불필요한 id, class, style 속성 제거
 - 외부 링크 사용 금지
-- 최종 HTML에 "ChatGPT", "Claude", "Gemini", "검토본" 표현 넣지 않음
+- 최종 HTML에 "ChatGPT", "Claude", "Gemini", "검토본" 표현 넣지 않음`;
 
-${orig?`## 원본 HTML\n${orig}\n\n`:''}## ChatGPT 검토 HTML
-${gpt||'(미입력)'}
+function getPrompt() {
+  return localStorage.getItem('bl_prompt') || DEFAULT_PROMPT;
+}
+function showPromptModal() {
+  document.getElementById('promptEditor').value = getPrompt();
+  document.getElementById('promptModal').classList.add('show');
+}
+function closePromptModal() {
+  document.getElementById('promptModal').classList.remove('show');
+}
+function savePrompt() {
+  localStorage.setItem('bl_prompt', document.getElementById('promptEditor').value);
+  closePromptModal();
+  showToast('프롬프트 저장됨','success');
+}
+function resetPrompt() {
+  document.getElementById('promptEditor').value = DEFAULT_PROMPT;
+  showToast('기본값으로 초기화됨','');
+}
+document.getElementById('promptModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closePromptModal();});
 
-## Claude 검토 HTML
-${claude||'(미입력)'}
+// ── 프롬프트 복사 ─────────────────────────────────────
+function copyPromptForGemini() {
+  const p=posts.find(x=>x.id===currentId);
+  if (!p) return;
+  const gpt=document.getElementById('html-gemini')?.value?.trim()||'';
+  const claude=document.getElementById('html-gpt')?.value?.trim()||'';
+  const orig=document.getElementById('html-orig')?.value?.trim()||'';
+  const memo=document.getElementById('memoField')?.value?.trim()||p.memo||'';
 
-## 기준 근거 및 검토 메모
-${memo||'(없음)'}
+  if (!gpt&&!claude) { showToast('ChatGPT 또는 Claude HTML을 먼저 입력하세요','error'); return; }
 
-위 내용을 바탕으로 최종 발행용 HTML만 출력하세요.`;
+  const prompt = getPrompt()
+    + `\n\n${orig?`## 원본 HTML\n${orig}\n\n`:''}## ChatGPT 검토 HTML\n${gpt||'(미입력)'}\n\n## Claude 검토 HTML\n${claude||'(미입력)'}\n\n## 기준 근거 및 검토 메모\n${memo||'(없음)'}\n\n위 내용을 바탕으로 최종 발행용 HTML만 출력하세요.`;
 
   navigator.clipboard.writeText(prompt)
     .then(()=>showToast('프롬프트 복사됨 — Gemini에 붙여넣으세요 ✓','success'))
@@ -786,6 +818,14 @@ function downloadExport(){
 }
 
 // ── 유틸 ──────────────────────────────────────────────
+// ── h2부터 시작 (이미지 태그 제거) ──────────────────
+function trimToH2(html) {
+  if (!html) return '';
+  const idx = html.indexOf('<h2');
+  if (idx === -1) return html;
+  return html.slice(idx);
+}
+
 function stripHtml(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent||d.innerText||'';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function sLabel(s){return {pass:'통과',fix:'수정필요',delete:'삭제',unreviewed:'미검토'}[s]||s;}
